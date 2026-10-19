@@ -102,7 +102,7 @@ import ItemsTab from './components/tabs/ItemsTab.vue';
 import SimulationTab from './components/tabs/SimulationTab.vue';
 import ReportsTab from './components/tabs/ReportsTab.vue';
 
-import { SAMPLE_EXPERTS_CSV, SAMPLE_STUDENTS_CSV } from './assets/sampleData.js';
+import { SAMPLE_EXPERTS_CSV, SAMPLE_STUDENTS_CSV, PRESET_DATASETS } from './assets/sampleData.js';
 import { validateExpertData, validateStudentData, findScoreColumnCandidates, selectItemColumns } from './core/validation.js';
 import { calculateAngoff } from './core/analysis.js';
 
@@ -240,17 +240,18 @@ const handleStudentUpload = async (file) => {
   }
 };
 
-const loadSampleData = () => {
-  const expRes = Papa.parse(SAMPLE_EXPERTS_CSV, { header: true, skipEmptyLines: true });
+const loadSampleData = (presetKey = 'default') => {
+  const preset = PRESET_DATASETS[presetKey] || PRESET_DATASETS.default;
+  const expRes = Papa.parse(preset.expertCsv, { header: true, skipEmptyLines: true });
   expertData.value = expRes.data;
   expertHeaders.value = expRes.meta.fields || [];
-  expertFileName.value = 'sample_experts.csv';
+  expertFileName.value = preset.expertFileName;
   itemCount.value = selectItemColumns(expertHeaders.value, 'auto').length;
 
-  const stuRes = Papa.parse(SAMPLE_STUDENTS_CSV, { header: true, skipEmptyLines: true });
+  const stuRes = Papa.parse(preset.studentCsv, { header: true, skipEmptyLines: true });
   studentData.value = stuRes.data;
   studentHeaders.value = stuRes.meta.fields || [];
-  studentFileName.value = 'sample_students.csv';
+  studentFileName.value = preset.studentFileName;
   scoreCol.value = '分數';
 };
 </script>

@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node test/ground_truth.test.js"
+    "test": "node test/ground_truth.test.js && node test/scale_simulation.js"
   },
   "dependencies": {
     "@lucide/vue": "^1.59.0",

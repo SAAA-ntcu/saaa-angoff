@@ -42,15 +42,53 @@
           </div>
         </div>
 
-        <!-- Load Sample Data -->
-        <button
-          type="button"
-          @click="loadSample"
-          class="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg text-sm font-semibold hover:from-blue-700 hover:to-indigo-800 transition-all shadow-xs flex items-center justify-center gap-2"
-        >
-          <Sparkles class="w-4 h-4" />
-          載入內建範例資料 (8位專家 / 13題 / 30位學生)
-        </button>
+        <!-- Load Sample Data Presets -->
+        <div class="border border-blue-100 bg-blue-50/40 rounded-xl p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+              <Sparkles class="w-4 h-4 text-blue-600" />
+              內建範例與規模模擬
+            </span>
+            <span class="text-[10px] text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-200 font-medium">免上傳即測</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            提供標準測試與 13 位專家大規模評量情境（25、30、35 題），點擊立即載入：
+          </p>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              @click="loadSample('default')"
+              class="text-left p-2.5 bg-white hover:bg-blue-600 hover:text-white rounded-lg border border-slate-200 hover:border-blue-600 transition-all shadow-2xs group"
+            >
+              <div class="font-bold text-xs text-slate-800 group-hover:text-white">標準測試</div>
+              <div class="text-[10px] text-slate-500 group-hover:text-blue-100">8 專家 · 13 題</div>
+            </button>
+            <button
+              type="button"
+              @click="loadSample('set_25')"
+              class="text-left p-2.5 bg-white hover:bg-blue-600 hover:text-white rounded-lg border border-slate-200 hover:border-blue-600 transition-all shadow-2xs group"
+            >
+              <div class="font-bold text-xs text-slate-800 group-hover:text-white">進階模擬 25 題</div>
+              <div class="text-[10px] text-slate-500 group-hover:text-blue-100">13 專家 · 80 學生</div>
+            </button>
+            <button
+              type="button"
+              @click="loadSample('set_30')"
+              class="text-left p-2.5 bg-white hover:bg-blue-600 hover:text-white rounded-lg border border-slate-200 hover:border-blue-600 transition-all shadow-2xs group"
+            >
+              <div class="font-bold text-xs text-slate-800 group-hover:text-white">學力標準 30 題</div>
+              <div class="text-[10px] text-slate-500 group-hover:text-blue-100">13 專家 · 100 學生</div>
+            </button>
+            <button
+              type="button"
+              @click="loadSample('set_35')"
+              class="text-left p-2.5 bg-white hover:bg-blue-600 hover:text-white rounded-lg border border-slate-200 hover:border-blue-600 transition-all shadow-2xs group"
+            >
+              <div class="font-bold text-xs text-slate-800 group-hover:text-white">大型評量 35 題</div>
+              <div class="text-[10px] text-slate-500 group-hover:text-blue-100">13 專家 · 120 學生</div>
+            </button>
+          </div>
+        </div>
 
         <div class="border-t border-slate-100 pt-4 space-y-4">
           <h4 class="text-sm font-bold text-slate-800">分析設定</h4>
@@ -314,8 +352,8 @@ const handleStudentFileUpload = (e) => {
   if (file) emit('upload-student', file);
 };
 
-const loadSample = () => {
-  emit('load-sample');
+const loadSample = (presetKey = 'default') => {
+  emit('load-sample', presetKey);
 };
 
 const expertValidMessages = computed(() => {
