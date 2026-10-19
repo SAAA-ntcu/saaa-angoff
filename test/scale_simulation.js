@@ -1,3 +1,4 @@
+import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
@@ -5,10 +6,7 @@ import { calculateAngoff } from '../src/core/analysis.js';
 import { classifyStudents } from '../src/core/simulation.js';
 import { generatePptxReport } from '../src/core/pptxGenerator.js';
 import { generateExcelWorkbook } from '../src/core/excelGenerator.js';
-
-const mockData = JSON.parse(
-  fs.readFileSync('C:/Users/adminn/.gemini/antigravity/brain/408f21c7-7bb8-4ee8-8d18-6f563f16f94e/scratch/mock_datasets.json', 'utf-8')
-);
+import { PRESET_DATASETS } from '../src/assets/sampleData.js';
 
 console.log('========================================================');
 console.log('  13 位專家 × 25、30、35 題 標準設定模擬壓力測試');
@@ -16,7 +14,7 @@ console.log('========================================================\n');
 
 for (const itemCount of [25, 30, 35]) {
   const setKey = `set_${itemCount}`;
-  const data = mockData[setKey];
+  const data = PRESET_DATASETS[setKey];
 
   const expertParsed = Papa.parse(data.expertCsv, { header: true, skipEmptyLines: true });
   const studentParsed = Papa.parse(data.studentCsv, { header: true, skipEmptyLines: true });
@@ -51,7 +49,7 @@ for (const itemCount of [25, 30, 35]) {
     analysis,
     studentResult: studentRes
   });
-  const tempPptx = `C:/Users/adminn/.gemini/antigravity/brain/408f21c7-7bb8-4ee8-8d18-6f563f16f94e/scratch/test_${itemCount}.pptx`;
+  const tempPptx = path.join(os.tmpdir(), `test_${itemCount}_${Date.now()}.pptx`);
   await pres.writeFile({ fileName: tempPptx });
   const pptxSize = fs.statSync(tempPptx).size;
   fs.unlinkSync(tempPptx);
