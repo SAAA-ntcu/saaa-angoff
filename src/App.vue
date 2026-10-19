@@ -35,13 +35,14 @@
       <div v-show="activeTab === 'experts'">
         <ExpertsTab
           :analysis="analysis"
+          :activeTab="activeTab"
           @register-charts="handleRegisterCharts"
         />
       </div>
 
       <!-- Tab 3: 題目分析 -->
       <div v-show="activeTab === 'items'">
-        <ItemsTab :analysis="analysis" />
+        <ItemsTab :analysis="analysis" :activeTab="activeTab" />
       </div>
 
       <!-- Tab 4: 門檻模擬 -->
@@ -50,6 +51,7 @@
           :analysis="analysis"
           :studentData="studentData"
           :scoreCol="scoreCol"
+          :activeTab="activeTab"
           :currentSimulatedBase="currentSimulatedBase"
           :currentSimulatedMastery="currentSimulatedMastery"
           @update:currentSimulatedBase="currentSimulatedBase = $event"

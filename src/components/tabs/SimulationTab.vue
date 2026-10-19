@@ -73,7 +73,7 @@
           <button
             type="button"
             @click="resetToOriginal"
-            class="w-full py-2 px-3 border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+            class="w-full py-2 px-3 border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
             <RotateCcw class="w-3.5 h-3.5" />
             重設為原始計算門檻 ({{ analysis.thresholds.current.基礎 }} / {{ analysis.thresholds.current.精熟 }})
@@ -112,7 +112,7 @@
           <div v-else-if="thresholdError" class="h-80 flex items-center justify-center text-rose-500 text-xs">
             門檻數值無效，暫停繪製
           </div>
-          <div v-else ref="pieChartContainer" class="w-full h-80"></div>
+          <div v-else ref="pieChartContainer" class="w-full h-[380px]"></div>
         </div>
       </div>
     </div>
@@ -187,7 +187,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import { 
   AlertCircle, 
@@ -202,6 +202,7 @@ const props = defineProps({
   analysis: { type: Object, default: null },
   studentData: { type: Array, default: null },
   scoreCol: { type: String, default: '' },
+  activeTab: { type: String, default: '' },
   currentSimulatedBase: { type: Number, default: null },
   currentSimulatedMastery: { type: Number, default: null }
 });
@@ -217,6 +218,7 @@ const simulatedBase = ref(4);
 const simulatedMastery = ref(8);
 const pieChartContainer = ref(null);
 let pieChartRef = null;
+let resizeObserver = null;
 
 const hasStudentData = computed(() => {
   return props.studentData && props.studentData.length > 0 && props.scoreCol;
@@ -297,43 +299,50 @@ const updatePieChart = () => {
     title: {
       text: '學生等級比例分布',
       left: 'center',
-      textStyle: { fontSize: 16, fontWeight: 'bold', color: '#1B365D' }
+      top: 10,
+      textStyle: { fontSize: 18, fontWeight: 'bold', color: '#000000', fontFamily: 'Microsoft JhengHei, sans-serif' }
     },
     tooltip: {
       trigger: 'item',
       formatter: '{b}：{c} 人 ({d}%)'
     },
     legend: {
-      bottom: 5,
-      data: ['待加強', '基礎', '精熟']
+      bottom: 8,
+      data: ['待加強', '基礎', '精熟'],
+      textStyle: { fontSize: 12, fontFamily: 'Microsoft JhengHei, sans-serif' }
     },
     series: [
       {
         name: '等級比例',
         type: 'pie',
-        radius: ['0%', '70%'],
-        center: ['50%', '50%'],
+        radius: ['0%', '72%'],
+        center: ['50%', '52%'],
         data: pieData,
         label: {
           show: true,
           formatter: '{b}\n{d}%',
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: 'bold',
-          lineHeight: 18
+          color: '#000000',
+          lineHeight: 18,
+          fontFamily: 'Microsoft JhengHei, sans-serif'
         },
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
+        itemStyle: {
+          borderColor: '#FFFFFF',
+          borderWidth: 2
         }
       }
     ]
-  });
+  }, true);
 
   emit('register-pie-chart', () => {
     return pieChartRef ? pieChartRef.getDataURL({ type: 'png', pixelRatio: 3, backgroundColor: '#ffffff' }) : null;
+  });
+};
+
+const resizeChart = () => {
+  nextTick(() => {
+    if (pieChartRef) pieChartRef.resize();
   });
 };
 
@@ -350,6 +359,7 @@ watch([simulatedBase, simulatedMastery], () => {
   emit('update:studentResult', studentResult.value);
   nextTick(() => {
     updatePieChart();
+    resizeChart();
   });
 });
 
@@ -357,15 +367,41 @@ watch(studentResult, () => {
   emit('update:studentResult', studentResult.value);
   nextTick(() => {
     updatePieChart();
+    resizeChart();
   });
+});
+
+watch(() => props.activeTab, (newTab) => {
+  if (newTab === 'simulation') {
+    nextTick(() => {
+      updatePieChart();
+      resizeChart();
+    });
+  }
 });
 
 onMounted(() => {
   nextTick(() => {
     updatePieChart();
-    window.addEventListener('resize', () => {
-      pieChartRef && pieChartRef.resize();
-    });
+
+    if (window.ResizeObserver && pieChartContainer.value) {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.contentRect.width > 50) {
+            resizeChart();
+          }
+        }
+      });
+      resizeObserver.observe(pieChartContainer.value);
+    }
+
+    window.addEventListener('resize', resizeChart);
   });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', resizeChart);
+  if (resizeObserver) resizeObserver.disconnect();
+  if (pieChartRef) pieChartRef.dispose();
 });
 </script>

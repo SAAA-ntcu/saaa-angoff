@@ -9,7 +9,7 @@
     <!-- Left Column: Disagreement Bar Chart -->
     <div class="lg:col-span-5 space-y-4">
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between">
-        <div class="border-b border-slate-100 pb-3 mb-3">
+        <div class="border-b border-slate-100 pb-3 mb-2">
           <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
             <BarChart2 class="w-4 h-4 text-indigo-600" />
             高爭議題分析 (Top 15)
@@ -68,16 +68,18 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import { AlertCircle, BarChart2, ListOrdered } from 'lucide-vue-next';
 
 const props = defineProps({
-  analysis: { type: Object, default: null }
+  analysis: { type: Object, default: null },
+  activeTab: { type: String, default: '' }
 });
 
 const barChartContainer = ref(null);
 let barChartRef = null;
+let resizeObserver = null;
 
 const sortedItemStats = computed(() => {
   if (!props.analysis || !props.analysis.itemStats) return [];
@@ -95,11 +97,12 @@ const initBarChart = () => {
   const top15 = sortedItemStats.value.slice(0, 15);
   // Reversing so that highest SD appears at top of horizontal chart
   const reversed = [...top15].reverse();
-  const yCategories = reversed.map(i => `第 ${i.題號} 題`);
+  const yCategories = reversed.map(i => `題號${i.題號}`);
   const xValues = reversed.map(i => Number(i.標準差.toFixed(3)));
 
-  if (barChartRef) barChartRef.dispose();
-  barChartRef = echarts.init(barChartContainer.value);
+  if (!barChartRef) {
+    barChartRef = echarts.init(barChartContainer.value);
+  }
 
   barChartRef.setOption({
     tooltip: {
@@ -107,61 +110,93 @@ const initBarChart = () => {
       axisPointer: { type: 'shadow' },
       formatter: (params) => {
         const p = params[0];
-        return `${p.name}<br/>評分標準差：<strong>${p.value}</strong>`;
+        return `<strong>${p.name}</strong><br/>評分標準差：<strong>${p.value}</strong>`;
       }
     },
     grid: {
-      top: 20,
-      bottom: 30,
+      top: 25,
+      bottom: 35,
       left: 70,
-      right: 30
+      right: 40
     },
     xAxis: {
       type: 'value',
       name: '標準差',
-      splitLine: { lineStyle: { color: '#E2E8F0' } }
+      splitLine: { lineStyle: { color: '#E2E8F0' } },
+      axisLabel: { fontSize: 11, fontWeight: 'bold' }
     },
     yAxis: {
       type: 'category',
       data: yCategories,
-      axisLabel: { fontSize: 11, fontWeight: 'bold' }
+      axisLabel: { fontSize: 11, fontWeight: 'bold', color: '#1E293B' },
+      axisTick: { alignWithLabel: true }
     },
     series: [
       {
         name: '標準差',
         type: 'bar',
         data: xValues,
+        barWidth: '65%',
         itemStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-            { offset: 0, color: '#3B82F6' },
-            { offset: 1, color: '#1D4E89' }
-          ]),
-          borderRadius: [0, 4, 4, 0]
+          color: '#1D4E89'
         },
         label: {
           show: true,
           position: 'right',
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: 'bold',
-          color: '#475569'
+          color: '#334155',
+          formatter: '{c}'
         }
       }
     ]
+  }, true);
+};
+
+const resizeChart = () => {
+  nextTick(() => {
+    if (barChartRef) barChartRef.resize();
   });
 };
 
 watch(() => props.analysis, () => {
   nextTick(() => {
     initBarChart();
+    resizeChart();
   });
 }, { deep: true });
+
+watch(() => props.activeTab, (newTab) => {
+  if (newTab === 'items') {
+    nextTick(() => {
+      initBarChart();
+      resizeChart();
+    });
+  }
+});
 
 onMounted(() => {
   nextTick(() => {
     initBarChart();
-    window.addEventListener('resize', () => {
-      barChartRef && barChartRef.resize();
-    });
+
+    if (window.ResizeObserver && barChartContainer.value) {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.contentRect.width > 50) {
+            resizeChart();
+          }
+        }
+      });
+      resizeObserver.observe(barChartContainer.value);
+    }
+
+    window.addEventListener('resize', resizeChart);
   });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', resizeChart);
+  if (resizeObserver) resizeObserver.disconnect();
+  if (barChartRef) barChartRef.dispose();
 });
 </script>
