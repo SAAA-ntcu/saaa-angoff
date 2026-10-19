@@ -198,7 +198,7 @@ const buildChartOption = (levelName, expertScores, avg, sd) => {
   // Range calculation matching R pretty() logic
   const allY = [...pointsData, high, avg, low];
   const minY = Math.max(0, Math.floor(Math.min(...allY) - 2));
-  const maxY = Math.ceil(Math.max(...allY) + 2);
+  const maxY = Math.ceil(Math.max(...allY) + 3);
 
   // Line segments that span experts 1~N and stop before '平均'
   const highLineData = Array(numExperts).fill(high).concat([null]);
@@ -210,15 +210,22 @@ const buildChartOption = (levelName, expertScores, avg, sd) => {
   const lowTag = `${levelName}-1`;
   const pointTag = `${levelName}最低`;
 
+  // Dynamic y-axis split calculation so 35 items doesn't produce 35 dense grid lines
+  const ySpan = maxY - minY;
+  let splitNum = 6;
+  if (ySpan > 25) splitNum = 7;
+  else if (ySpan > 15) splitNum = 6;
+  else splitNum = Math.max(3, Math.min(ySpan, 5));
+
   return {
     title: {
       text: `各委員預估達${levelName}最低題數`,
       left: 'center',
       top: 10,
       textStyle: {
-        fontSize: 17,
+        fontSize: 18,
         fontWeight: 'bold',
-        color: '#000000',
+        color: '#1E293B',
         fontFamily: 'Microsoft JhengHei, sans-serif'
       }
     },
@@ -233,6 +240,7 @@ const buildChartOption = (levelName, expertScores, avg, sd) => {
     },
     legend: {
       bottom: 8,
+      itemGap: 24,
       data: [
         { name: levelTag, icon: 'line', itemStyle: { color: '#ED7D31' } },
         { name: avgTag, icon: 'line', itemStyle: { color: '#A5A5A5' } },
@@ -241,45 +249,49 @@ const buildChartOption = (levelName, expertScores, avg, sd) => {
       ],
       textStyle: {
         fontSize: 12,
-        fontFamily: 'Microsoft JhengHei, sans-serif'
+        fontFamily: 'Microsoft JhengHei, sans-serif',
+        color: '#475569'
       }
     },
     grid: {
-      top: 55,
-      bottom: 75,
-      left: 50,
-      right: 50
+      top: 50,
+      bottom: 65,
+      left: 55,
+      right: 45
     },
     xAxis: {
       type: 'category',
       data: xLabels,
       axisLabel: {
         interval: 0,
-        rotate: 45,
-        fontSize: 12,
+        rotate: numExperts > 10 ? 35 : 0,
+        fontSize: numExperts > 10 ? 11 : 12,
         fontWeight: 'bold',
-        color: '#333333',
-        margin: 14,
+        color: '#475569',
+        margin: 12,
         fontFamily: 'Microsoft JhengHei, sans-serif'
       },
-      axisTick: { alignWithLabel: true },
-      axisLine: { lineStyle: { color: '#94A3B8' } },
+      axisTick: { alignWithLabel: true, lineStyle: { color: '#CBD5E1' } },
+      axisLine: { lineStyle: { color: '#CBD5E1' } },
       splitLine: { show: false }
     },
     yAxis: {
       type: 'value',
       min: minY,
       max: maxY,
-      interval: 1,
+      minInterval: 1,
+      splitNumber: splitNum,
       axisLabel: {
         fontSize: 12,
         fontWeight: 'bold',
-        color: '#333333',
+        color: '#475569',
         fontFamily: 'Microsoft JhengHei, sans-serif'
       },
+      axisTick: { show: true, lineStyle: { color: '#CBD5E1' } },
+      axisLine: { show: true, lineStyle: { color: '#CBD5E1' } },
       splitLine: {
         show: true,
-        lineStyle: { color: '#E2E8F0', type: 'solid' }
+        lineStyle: { color: '#F1F5F9', type: 'solid' }
       }
     },
     series: [
@@ -289,7 +301,7 @@ const buildChartOption = (levelName, expertScores, avg, sd) => {
         type: 'line',
         data: highLineData,
         symbol: 'none',
-        lineStyle: { color: '#ED7D31', width: 2.5 },
+        lineStyle: { color: '#ED7D31', width: 2.2 },
         itemStyle: { color: '#ED7D31' },
         connectNulls: false,
         z: 2
@@ -300,7 +312,7 @@ const buildChartOption = (levelName, expertScores, avg, sd) => {
         type: 'line',
         data: avgLineData,
         symbol: 'none',
-        lineStyle: { color: '#A5A5A5', width: 2.5 },
+        lineStyle: { color: '#A5A5A5', width: 2.2 },
         itemStyle: { color: '#A5A5A5' },
         connectNulls: false,
         z: 2
@@ -311,26 +323,26 @@ const buildChartOption = (levelName, expertScores, avg, sd) => {
         type: 'line',
         data: lowLineData,
         symbol: 'none',
-        lineStyle: { color: '#FFC000', width: 2.5 },
+        lineStyle: { color: '#FFC000', width: 2.2 },
         itemStyle: { color: '#FFC000' },
         connectNulls: false,
         z: 2
       },
-      // 4. Expert points (Scatter plot with labels)
+      // 4. Expert points (Scatter plot with labels on top)
       {
         name: pointTag,
         type: 'scatter',
         data: pointsData,
-        symbolSize: 13,
+        symbolSize: numExperts > 10 ? 11 : 13,
         itemStyle: { color: '#4472C4' },
         label: {
           show: true,
-          position: 'right',
-          distance: 9,
+          position: 'top',
+          distance: 5,
           formatter: '{c}',
-          fontSize: 14,
+          fontSize: numExperts > 10 ? 11 : 12,
           fontWeight: 'bold',
-          color: '#000000',
+          color: '#1E293B',
           fontFamily: 'Microsoft JhengHei, sans-serif'
         },
         z: 3
