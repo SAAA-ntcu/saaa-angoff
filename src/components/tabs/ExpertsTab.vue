@@ -156,6 +156,7 @@ import {
 } from 'lucide-vue-next';
 import MetricCard from '../layout/MetricCard.vue';
 import { buildThresholdComparison } from '../../core/analysis.js';
+import { buildConsistencyChartOption } from '../../core/chartRenderer.js';
 
 const props = defineProps({
   analysis: { type: Object, default: null },
@@ -180,177 +181,6 @@ const thresholdComparison = computed(() => {
   return buildThresholdComparison(props.analysis);
 });
 
-/**
- * Build ECharts option matching r-angoff generate_chart1 / generate_chart2 with 100% precision
- */
-const buildChartOption = (levelName, expertScores, avg, sd) => {
-  const numExperts = expertScores.length;
-  const xLabels = [];
-  for (let i = 1; i <= numExperts; i++) {
-    xLabels.push(`專家${i}`);
-  }
-  xLabels.push('平均');
-
-  const high = avg + sd;
-  const low = avg - sd;
-  const pointsData = [...expertScores, avg];
-
-  // Range calculation matching R pretty() logic
-  const allY = [...pointsData, high, avg, low];
-  const minY = Math.max(0, Math.floor(Math.min(...allY) - 2));
-  const maxY = Math.ceil(Math.max(...allY) + 3);
-
-  // Line segments that span experts 1~N and stop before '平均'
-  const highLineData = Array(numExperts).fill(high).concat([null]);
-  const avgLineData = Array(numExperts).fill(avg).concat([null]);
-  const lowLineData = Array(numExperts).fill(low).concat([null]);
-
-  const levelTag = `${levelName}+1`;
-  const avgTag = levelName;
-  const lowTag = `${levelName}-1`;
-  const pointTag = `${levelName}最低`;
-
-  // Dynamic y-axis split calculation so 35 items doesn't produce 35 dense grid lines
-  const ySpan = maxY - minY;
-  let splitNum = 6;
-  if (ySpan > 25) splitNum = 7;
-  else if (ySpan > 15) splitNum = 6;
-  else splitNum = Math.max(3, Math.min(ySpan, 5));
-
-  return {
-    title: {
-      text: `各委員預估達${levelName}最低題數`,
-      left: 'center',
-      top: 10,
-      textStyle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1E293B',
-        fontFamily: 'Microsoft JhengHei, sans-serif'
-      }
-    },
-    tooltip: {
-      trigger: 'item',
-      formatter: (params) => {
-        if (params.seriesType === 'scatter') {
-          return `<strong>${params.name}</strong><br/>預估題數：${params.value} 題`;
-        }
-        return `<strong>${params.seriesName}</strong>：${params.value} 題`;
-      }
-    },
-    legend: {
-      bottom: 8,
-      itemGap: 24,
-      data: [
-        { name: levelTag, icon: 'line', itemStyle: { color: '#ED7D31' } },
-        { name: avgTag, icon: 'line', itemStyle: { color: '#A5A5A5' } },
-        { name: lowTag, icon: 'line', itemStyle: { color: '#FFC000' } },
-        { name: pointTag, icon: 'circle', itemStyle: { color: '#4472C4' } }
-      ],
-      textStyle: {
-        fontSize: 12,
-        fontFamily: 'Microsoft JhengHei, sans-serif',
-        color: '#475569'
-      }
-    },
-    grid: {
-      top: 50,
-      bottom: 65,
-      left: 55,
-      right: 45
-    },
-    xAxis: {
-      type: 'category',
-      data: xLabels,
-      axisLabel: {
-        interval: 0,
-        rotate: numExperts > 10 ? 35 : 0,
-        fontSize: numExperts > 10 ? 11 : 12,
-        fontWeight: 'bold',
-        color: '#475569',
-        margin: 12,
-        fontFamily: 'Microsoft JhengHei, sans-serif'
-      },
-      axisTick: { alignWithLabel: true, lineStyle: { color: '#CBD5E1' } },
-      axisLine: { lineStyle: { color: '#CBD5E1' } },
-      splitLine: { show: false }
-    },
-    yAxis: {
-      type: 'value',
-      min: minY,
-      max: maxY,
-      minInterval: 1,
-      splitNumber: splitNum,
-      axisLabel: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#475569',
-        fontFamily: 'Microsoft JhengHei, sans-serif'
-      },
-      axisTick: { show: true, lineStyle: { color: '#CBD5E1' } },
-      axisLine: { show: true, lineStyle: { color: '#CBD5E1' } },
-      splitLine: {
-        show: true,
-        lineStyle: { color: '#F1F5F9', type: 'solid' }
-      }
-    },
-    series: [
-      // 1. +1 SD horizontal reference segment
-      {
-        name: levelTag,
-        type: 'line',
-        data: highLineData,
-        symbol: 'none',
-        lineStyle: { color: '#ED7D31', width: 2.2 },
-        itemStyle: { color: '#ED7D31' },
-        connectNulls: false,
-        z: 2
-      },
-      // 2. Mean horizontal reference segment
-      {
-        name: avgTag,
-        type: 'line',
-        data: avgLineData,
-        symbol: 'none',
-        lineStyle: { color: '#A5A5A5', width: 2.2 },
-        itemStyle: { color: '#A5A5A5' },
-        connectNulls: false,
-        z: 2
-      },
-      // 3. -1 SD horizontal reference segment
-      {
-        name: lowTag,
-        type: 'line',
-        data: lowLineData,
-        symbol: 'none',
-        lineStyle: { color: '#FFC000', width: 2.2 },
-        itemStyle: { color: '#FFC000' },
-        connectNulls: false,
-        z: 2
-      },
-      // 4. Expert points (Scatter plot with labels on top)
-      {
-        name: pointTag,
-        type: 'scatter',
-        data: pointsData,
-        symbolSize: numExperts > 10 ? 11 : 13,
-        itemStyle: { color: '#4472C4' },
-        label: {
-          show: true,
-          position: 'top',
-          distance: 5,
-          formatter: '{c}',
-          fontSize: numExperts > 10 ? 11 : 12,
-          fontWeight: 'bold',
-          color: '#1E293B',
-          fontFamily: 'Microsoft JhengHei, sans-serif'
-        },
-        z: 3
-      }
-    ]
-  };
-};
-
 const initCharts = () => {
   if (!props.analysis) return;
 
@@ -362,14 +192,14 @@ const initCharts = () => {
     if (!chart1Ref) {
       chart1Ref = echarts.init(chart1Container.value);
     }
-    chart1Ref.setOption(buildChartOption('基礎', expertScores1, legacy.基礎, legacy.基礎標準差), true);
+    chart1Ref.setOption(buildConsistencyChartOption('基礎', expertScores1, legacy.基礎, legacy.基礎標準差), true);
   }
 
   if (chart2Container.value) {
     if (!chart2Ref) {
       chart2Ref = echarts.init(chart2Container.value);
     }
-    chart2Ref.setOption(buildChartOption('精熟', expertScores2, legacy.精熟, legacy.精熟標準差), true);
+    chart2Ref.setOption(buildConsistencyChartOption('精熟', expertScores2, legacy.精熟, legacy.精熟標準差), true);
   }
 
   emit('register-charts', {

@@ -1,4 +1,5 @@
 import pptxgen from 'pptxgenjs';
+import { buildConsistencyChartOption, buildPieChartOption, renderChartToBase64 } from './chartRenderer.js';
 
 export async function generatePptxReport({
   fieldName = '自然',
@@ -25,6 +26,25 @@ export async function generatePptxReport({
   const baseSd = legacy.基礎標準差;
   const mastAvg = legacy.精熟;
   const mastSd = legacy.精熟標準差;
+
+  // Auto-generate fresh charts if not provided
+  let c1 = chart1Base64;
+  let c2 = chart2Base64;
+  let pie = pieChartBase64;
+
+  if (typeof document !== 'undefined') {
+    const expertScores1 = analysis.expertStats ? analysis.expertStats.map(e => e.基礎切截分數) : [];
+    const expertScores2 = analysis.expertStats ? analysis.expertStats.map(e => e.精熟切截分數) : [];
+    if (!c1 && expertScores1.length > 0) {
+      c1 = renderChartToBase64(buildConsistencyChartOption('基礎', expertScores1, baseAvg, baseSd));
+    }
+    if (!c2 && expertScores2.length > 0) {
+      c2 = renderChartToBase64(buildConsistencyChartOption('精熟', expertScores2, mastAvg, mastSd));
+    }
+    if (!pie && studentResult) {
+      pie = renderChartToBase64(buildPieChartOption(studentResult.summary), 1000, 1000);
+    }
+  }
 
   // ==========================================
   // Slide 1: 封面
@@ -55,9 +75,9 @@ export async function generatePptxReport({
     fontSize: 24, bold: true, color: '1B365D', align: 'center', fontFace: fontFam
   });
 
-  if (chart1Base64) {
+  if (c1) {
     slide2.addImage({
-      data: chart1Base64,
+      data: c1,
       x: 1.2, y: 1.15, w: 10.93, h: 4.55
     });
   }
@@ -81,9 +101,9 @@ export async function generatePptxReport({
     fontSize: 24, bold: true, color: '1B365D', align: 'center', fontFace: fontFam
   });
 
-  if (chart2Base64) {
+  if (c2) {
     slide3.addImage({
-      data: chart2Base64,
+      data: c2,
       x: 1.2, y: 1.15, w: 10.93, h: 4.55
     });
   }
@@ -102,18 +122,16 @@ export async function generatePptxReport({
   // Slide 4 ~ N: 題目變異數排序表
   // ==========================================
   const varSheet = analysis.varianceSheet;
-  const itemsPerColumn = 18; // Max 18 rows per column (+ 1 header = 19 rows total)
-  const itemsPerSlide = itemsPerColumn * 2; // 36 items per slide
+  // If total items <= 16, put on 1 slide.
+  // If total items > 16, comfortably paginate with max 10 items per column (max 20 items per slide).
+  // For 35 items: Slide 1 has 18 items (9 left, 9 right), Slide 2 has 17 items (9 left, 8 right).
+  // Total 10 rows per column (1 header + 9 items) = 3.8 inches tall.
+  // Leaves 2.5 inches of margin at bottom, 100% immune to cut-off.
+  const itemsPerSlide = varSheet.length <= 16 ? varSheet.length : 20;
   const numSlides = Math.ceil(varSheet.length / itemsPerSlide) || 1;
 
   for (let sIdx = 0; sIdx < numSlides; sIdx++) {
     const slide = pres.addSlide();
-    const slideTitle = numSlides > 1 ? `題目變異數排序表 (${sIdx + 1}/${numSlides})` : '題目變異數排序表';
-    slide.addText(slideTitle, {
-      x: 1.0, y: 0.35, w: 11.33, h: 0.5,
-      fontSize: 22, bold: true, color: '1B365D', align: 'center', fontFace: fontFam
-    });
-
     const startIdx = sIdx * itemsPerSlide;
     const endIdx = Math.min((sIdx + 1) * itemsPerSlide, varSheet.length);
     const subItems = varSheet.slice(startIdx, endIdx);
@@ -121,6 +139,15 @@ export async function generatePptxReport({
 
     const leftItems = subItems.slice(0, splitPoint);
     const rightItems = subItems.slice(splitPoint);
+
+    const slideTitle = numSlides > 1 
+      ? `題目變異數排序表 (${sIdx + 1}/${numSlides})` 
+      : '題目變異數排序表';
+
+    slide.addText(slideTitle, {
+      x: 1.0, y: 0.4, w: 11.33, h: 0.5,
+      fontSize: 24, bold: true, color: '1B365D', align: 'center', fontFace: fontFam
+    });
 
     const buildTableRows = (items) => {
       const rows = [
@@ -145,27 +172,28 @@ export async function generatePptxReport({
       return rows;
     };
 
-    const colWidths = [0.95, 1.25, 1.1, 1.1, 1.2]; // total = 5.6 inches
+    const colWidths = [1.0, 1.3, 1.0, 1.0, 1.1]; // total = 5.4 in
+    const tableOptions = {
+      y: 1.15,
+      w: 5.4,
+      colW: colWidths,
+      fontSize: 12,
+      fontFace: fontFam,
+      margin: [2.5, 3, 2.5, 3],
+      border: { type: 'solid', pt: 0.5, color: '000000' }
+    };
 
     if (leftItems.length > 0) {
       slide.addTable(buildTableRows(leftItems), {
-        x: 0.85, y: 1.05, w: 5.6,
-        colW: colWidths,
-        fontSize: 10.5,
-        fontFace: fontFam,
-        margin: [1.5, 2, 1.5, 2],
-        border: { type: 'solid', pt: 0.5, color: '000000' }
+        ...tableOptions,
+        x: 1.0
       });
     }
 
     if (rightItems.length > 0) {
       slide.addTable(buildTableRows(rightItems), {
-        x: 6.88, y: 1.05, w: 5.6,
-        colW: colWidths,
-        fontSize: 10.5,
-        fontFace: fontFam,
-        margin: [1.5, 2, 1.5, 2],
-        border: { type: 'solid', pt: 0.5, color: '000000' }
+        ...tableOptions,
+        x: 6.9
       });
     }
   }
@@ -180,9 +208,9 @@ export async function generatePptxReport({
       fontSize: 24, bold: true, color: '1B365D', align: 'center', fontFace: fontFam
     });
 
-    if (pieChartBase64) {
+    if (pie) {
       slideStu.addImage({
-        data: pieChartBase64,
+        data: pie,
         x: 0.8, y: 1.2, w: 5.8, h: 5.6
       });
     }

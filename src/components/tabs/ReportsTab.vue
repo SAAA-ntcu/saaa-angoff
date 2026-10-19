@@ -316,6 +316,7 @@ import { FIELD_LABELS, ROUND_LABELS } from '../../core/constants.js';
 import { generateExcelWorkbook } from '../../core/excelGenerator.js';
 import { generateHtmlReport } from '../../core/htmlReportGenerator.js';
 import { generatePptxReport } from '../../core/pptxGenerator.js';
+import { buildConsistencyChartOption, buildPieChartOption, renderChartToBase64 } from '../../core/chartRenderer.js';
 
 const props = defineProps({
   analysis: { type: Object, default: null },
@@ -355,29 +356,41 @@ const pieChartImage = ref(null);
 
 const togglePreview = () => {
   showPreview.value = !showPreview.value;
-  if (showPreview.value) {
-    if (props.getChart1Base64) chart1Image.value = props.getChart1Base64();
-    if (props.getChart2Base64) chart2Image.value = props.getChart2Base64();
-    if (props.getPieChartBase64) pieChartImage.value = props.getPieChartBase64();
+  if (showPreview.value && props.analysis) {
+    const legacy = props.analysis.legacyThresholds;
+    const expertScores1 = props.analysis.expertStats ? props.analysis.expertStats.map(e => e.基礎切截分數) : [];
+    const expertScores2 = props.analysis.expertStats ? props.analysis.expertStats.map(e => e.精熟切截分數) : [];
+
+    chart1Image.value = renderChartToBase64(buildConsistencyChartOption('基礎', expertScores1, legacy.基礎, legacy.基礎標準差));
+    chart2Image.value = renderChartToBase64(buildConsistencyChartOption('精熟', expertScores2, legacy.精熟, legacy.精熟標準差));
+    if (props.studentResult) {
+      pieChartImage.value = renderChartToBase64(buildPieChartOption(props.studentResult.summary), 1000, 1000);
+    }
   }
 };
 
 const previewSlideCount = computed(() => {
   if (!props.analysis) return 0;
-  const numItemSlides = Math.ceil(props.analysis.varianceSheet.length / 38) || 1;
+  const totalItems = props.analysis.varianceSheet.length;
+  const itemsPerSlide = totalItems <= 16 ? totalItems : 20;
+  const numItemSlides = Math.ceil(totalItems / itemsPerSlide) || 1;
   return 3 + numItemSlides + (props.studentResult ? 1 : 0);
 });
 
 const previewLeftItems = computed(() => {
   if (!props.analysis) return [];
-  const sub = props.analysis.varianceSheet.slice(0, 38);
+  const totalItems = props.analysis.varianceSheet.length;
+  const itemsPerSlide = totalItems <= 16 ? totalItems : 20;
+  const sub = props.analysis.varianceSheet.slice(0, itemsPerSlide);
   const mid = Math.ceil(sub.length / 2);
   return sub.slice(0, mid);
 });
 
 const previewRightItems = computed(() => {
   if (!props.analysis) return [];
-  const sub = props.analysis.varianceSheet.slice(0, 38);
+  const totalItems = props.analysis.varianceSheet.length;
+  const itemsPerSlide = totalItems <= 16 ? totalItems : 20;
+  const sub = props.analysis.varianceSheet.slice(0, itemsPerSlide);
   const mid = Math.ceil(sub.length / 2);
   return sub.slice(mid);
 });
@@ -433,9 +446,15 @@ const exportHtml = () => {
 
 const generatePptx = async () => {
   if (!props.analysis) return;
-  const c1 = props.getChart1Base64 ? props.getChart1Base64() : null;
-  const c2 = props.getChart2Base64 ? props.getChart2Base64() : null;
-  const pie = props.getPieChartBase64 ? props.getPieChartBase64() : null;
+
+  const legacy = props.analysis.legacyThresholds;
+  const expertScores1 = props.analysis.expertStats ? props.analysis.expertStats.map(e => e.基礎切截分數) : [];
+  const expertScores2 = props.analysis.expertStats ? props.analysis.expertStats.map(e => e.精熟切截分數) : [];
+
+  // Directly generate guaranteed fresh, 1600x900 offscreen charts in memory
+  const c1 = renderChartToBase64(buildConsistencyChartOption('基礎', expertScores1, legacy.基礎, legacy.基礎標準差));
+  const c2 = renderChartToBase64(buildConsistencyChartOption('精熟', expertScores2, legacy.精熟, legacy.精熟標準差));
+  const pie = props.studentResult ? renderChartToBase64(buildPieChartOption(props.studentResult.summary), 1000, 1000) : null;
 
   const clonedAnalysis = JSON.parse(JSON.stringify(props.analysis));
   clonedAnalysis.thresholds.current = effectiveThresholds.value;
