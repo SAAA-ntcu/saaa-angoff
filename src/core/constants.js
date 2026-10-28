@@ -32,3 +32,7 @@ export const FIELD_LABELS = {
 };
 
 export const ROUND_LABELS = ['一', '二', '三', '四', '五'];
+
+// r-angoff places at most 19 item rows in each of the two PPTX columns.
+export const VARIANCE_ITEMS_PER_COLUMN = 19;
+export const VARIANCE_ITEMS_PER_SLIDE = VARIANCE_ITEMS_PER_COLUMN * 2;

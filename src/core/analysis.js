@@ -25,6 +25,10 @@ export function calcExpertStats(rows, headers, missingPolicy = 'error', itemCoun
 
     const sd = SAAAMath.sampleSd(colScores);
     const validCount = colScores.length;
+    // r-angoff's safe_sd() returns NA for fewer than two ratings and removes
+    // those rows from item statistics and the variance sheet.
+    if (isNaN(sd)) continue;
+
     const c1 = colScores.filter(v => v === 1).length;
     const c2 = colScores.filter(v => v === 2).length;
     const c3 = colScores.filter(v => v === 3).length;
@@ -32,7 +36,7 @@ export function calcExpertStats(rows, headers, missingPolicy = 'error', itemCoun
     itemStats.push({
       題號: extractItemNumber(itemCols[c]),
       題目欄位: itemCols[c],
-      標準差: isNaN(sd) ? 0 : sd,
+      標準差: sd,
       有效人數: validCount,
       待加強人數: c1,
       基礎人數: c2,
@@ -44,7 +48,12 @@ export function calcExpertStats(rows, headers, missingPolicy = 'error', itemCoun
   }
 
   // Sort item stats by item number
-  itemStats.sort((a, b) => a.題號 - b.題號);
+  itemStats.sort((a, b) => {
+    if (Number.isNaN(a.題號) !== Number.isNaN(b.題號)) {
+      return Number.isNaN(a.題號) ? 1 : -1;
+    }
+    return a.題號 - b.題號;
+  });
 
   // Cut scores per expert
   const cutScoresRaw = [];
@@ -80,10 +89,10 @@ export function calcExpertStats(rows, headers, missingPolicy = 'error', itemCoun
   return {
     itemStats,
     cutScoresRaw,
-    baseAvg: Math.round(rawBaseAvg),
-    baseSd: Math.round(rawBaseSd),
-    mastAvg: Math.round(rawMastAvg),
-    mastSd: Math.round(rawMastSd),
+    baseAvg: SAAAMath.roundToEven(rawBaseAvg),
+    baseSd: SAAAMath.roundToEven(rawBaseSd),
+    mastAvg: SAAAMath.roundToEven(rawMastAvg),
+    mastSd: SAAAMath.roundToEven(rawMastSd),
     rawBaseAvg,
     rawBaseSd,
     rawMastAvg,
@@ -112,8 +121,8 @@ export function generateCutScores(cutScoresRaw, baseAvg, baseSd, mastAvg, mastSd
   ];
 
   const cutScoreMatrix = rows.map(r => {
-    const mean = Math.round(SAAAMath.mean(r.values));
-    const sd = Math.round(SAAAMath.sampleSd(r.values));
+    const mean = SAAAMath.roundToEven(SAAAMath.mean(r.values));
+    const sd = SAAAMath.roundToEven(SAAAMath.sampleSd(r.values));
     const obj = { 指標: r.指標 };
     r.values.forEach((v, idx) => {
       obj[expertLabels[idx]] = v;
@@ -128,7 +137,7 @@ export function generateCutScores(cutScoresRaw, baseAvg, baseSd, mastAvg, mastSd
 
 export function generateVarSheet(itemStats) {
   const sorted = [...itemStats].sort((a, b) => {
-    if (Math.abs(b.標準差 - a.標準差) > 1e-9) {
+    if (b.標準差 !== a.標準差) {
       return b.標準差 - a.標準差;
     }
     return a.題號 - b.題號;
@@ -136,10 +145,10 @@ export function generateVarSheet(itemStats) {
 
   return sorted.map(it => ({
     題號: it.題號,
-    標準差: it.標準差 === 0 ? '0' : it.標準差.toFixed(2),
-    A: `${Math.round(it.待加強 * 100)}%`,
-    B: `${Math.round(it.基礎 * 100)}%`,
-    C: `${Math.round(it.精熟 * 100)}%`
+    標準差: it.標準差 === 0 ? '0' : SAAAMath.formatFixed(it.標準差, 2),
+    A: SAAAMath.formatPercent(it.待加強, 0),
+    B: SAAAMath.formatPercent(it.基礎, 0),
+    C: SAAAMath.formatPercent(it.精熟, 0)
   }));
 }
 

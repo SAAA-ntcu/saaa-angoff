@@ -129,171 +129,163 @@
       <!-- Stack of Slides -->
       <div class="space-y-8 max-w-4xl mx-auto">
         <!-- Slide 1: Cover -->
-        <div class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video p-8 flex flex-col justify-between text-center relative overflow-hidden">
-          <span class="absolute top-3 right-4 text-xs font-bold text-slate-400">Slide 1</span>
-          <div class="my-auto space-y-3">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-[#1B365D] tracking-wide">
+        <div class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video relative overflow-hidden text-center">
+          <div class="absolute left-[20%] top-[18.7%] h-[25%] w-[60%] space-y-0 leading-tight">
+            <h1 class="text-5xl sm:text-6xl font-extrabold text-[#1B365D] tracking-wide">
               {{ fieldLabels[pptxField] }}領域
             </h1>
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-[#1B365D] tracking-wide">
+            <h1 class="text-5xl sm:text-6xl font-extrabold text-[#1B365D] tracking-wide">
               標準設定會議
             </h1>
-            <h2 class="text-xl sm:text-2xl font-bold text-[#595959] pt-4">
+          </div>
+          <div class="absolute left-[20%] top-[55.2%] h-[34%] w-[60%] space-y-2">
+            <h2 class="text-2xl sm:text-3xl font-bold text-[#595959]">
               第{{ roundLabels[pptxRound - 1] }}輪專家評分結果分析報告
             </h2>
-            <p class="text-sm text-slate-400 font-medium pt-2">
+            <p class="text-sm text-slate-400 font-medium">
               會議日期：{{ todayString }}
             </p>
           </div>
         </div>
 
         <!-- Slide 2: Basic Consistency -->
-        <div class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video p-6 flex flex-col justify-between relative overflow-hidden">
-          <span class="absolute top-3 right-4 text-xs font-bold text-slate-400">Slide 2</span>
-          <h2 class="text-lg sm:text-xl font-bold text-[#1B365D] text-center mb-2">
+        <div class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video relative overflow-hidden">
+          <h2 class="absolute left-[16.25%] top-[5.3%] h-[8%] w-[67.5%] text-xl sm:text-2xl font-bold text-[#1B365D] text-center">
             基礎等級門檻分析 (Cut Score)
           </h2>
-          <div class="flex-1 flex items-center justify-center p-2">
-            <img v-if="chart1Image" :src="chart1Image" class="max-h-56 max-w-full object-contain" />
+          <div class="absolute left-[16.25%] top-[17.3%] h-[60%] w-[67.5%]">
+            <img v-if="chart1Image" :src="chart1Image" class="h-full w-full object-fill" />
             <div v-else class="text-xs text-slate-400">圖表生成中...</div>
           </div>
-          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-700 space-y-1">
-            <div class="font-bold">基礎等級通過門檻對照值（平均數 ± 1個標準差）：</div>
-            <div class="flex gap-4">
-              <span>• 基礎 - 1 SD (寬鬆)：<strong>{{ analysis.legacyThresholds.基礎 - analysis.legacyThresholds.基礎標準差 }}</strong> 題</span>
-              <span class="text-emerald-700 font-bold">• 基礎等級 (平均)：{{ analysis.legacyThresholds.基礎 }} 題</span>
-              <span>• 基礎 + 1 SD (嚴格)：<strong>{{ analysis.legacyThresholds.基礎 + analysis.legacyThresholds.基礎標準差 }}</strong> 題</span>
-            </div>
+          <div class="absolute left-[16.25%] top-[78.7%] h-[17%] w-[67.5%] space-y-[1px] text-left text-[13px] leading-tight text-slate-700">
+            <div class="font-bold">基礎等級通過門檻對照值 (平均數 ± 1個標準差)：</div>
+            <div>• 基礎 - 1個標準差 (寬鬆門檻)：{{ analysis.legacyThresholds.基礎 - analysis.legacyThresholds.基礎標準差 }} 題</div>
+            <div class="font-bold text-[#385723]">• 基礎等級 (平均門檻值)：{{ analysis.legacyThresholds.基礎 }} 題</div>
+            <div>• 基礎 + 1個標準差 (嚴格門檻)：{{ analysis.legacyThresholds.基礎 + analysis.legacyThresholds.基礎標準差 }} 題</div>
           </div>
         </div>
 
         <!-- Slide 3: Mastery Consistency -->
-        <div class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video p-6 flex flex-col justify-between relative overflow-hidden">
-          <span class="absolute top-3 right-4 text-xs font-bold text-slate-400">Slide 3</span>
-          <h2 class="text-lg sm:text-xl font-bold text-[#1B365D] text-center mb-2">
+        <div class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video relative overflow-hidden">
+          <h2 class="absolute left-[16.25%] top-[5.3%] h-[8%] w-[67.5%] text-xl sm:text-2xl font-bold text-[#1B365D] text-center">
             精熟等級門檻分析 (Cut Score)
           </h2>
-          <div class="flex-1 flex items-center justify-center p-2">
-            <img v-if="chart2Image" :src="chart2Image" class="max-h-56 max-w-full object-contain" />
+          <div class="absolute left-[16.25%] top-[17.3%] h-[60%] w-[67.5%]">
+            <img v-if="chart2Image" :src="chart2Image" class="h-full w-full object-fill" />
             <div v-else class="text-xs text-slate-400">圖表生成中...</div>
           </div>
-          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-700 space-y-1">
-            <div class="font-bold">精熟等級通過門檻對照值（平均數 ± 1個標準差）：</div>
-            <div class="flex gap-4">
-              <span>• 精熟 - 1 SD (寬鬆)：<strong>{{ analysis.legacyThresholds.精熟 - analysis.legacyThresholds.精熟標準差 }}</strong> 題</span>
-              <span class="text-emerald-700 font-bold">• 精熟等級 (平均)：{{ analysis.legacyThresholds.精熟 }} 題</span>
-              <span>• 精熟 + 1 SD (嚴格)：<strong>{{ analysis.legacyThresholds.精熟 + analysis.legacyThresholds.精熟標準差 }}</strong> 題</span>
-            </div>
+          <div class="absolute left-[16.25%] top-[78.7%] h-[17%] w-[67.5%] space-y-[1px] text-left text-[13px] leading-tight text-slate-700">
+            <div class="font-bold">精熟等級通過門檻對照值 (平均數 ± 1個標準差)：</div>
+            <div>• 精熟 - 1個標準差 (寬鬆門檻)：{{ analysis.legacyThresholds.精熟 - analysis.legacyThresholds.精熟標準差 }} 題</div>
+            <div class="font-bold text-[#385723]">• 精熟等級 (平均門檻值)：{{ analysis.legacyThresholds.精熟 }} 題</div>
+            <div>• 精熟 + 1個標準差 (嚴格門檻)：{{ analysis.legacyThresholds.精熟 + analysis.legacyThresholds.精熟標準差 }} 題</div>
           </div>
         </div>
 
         <!-- Slide 4: Item Disagreement Table Preview -->
-        <div class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video p-6 flex flex-col justify-between relative overflow-hidden">
-          <span class="absolute top-3 right-4 text-xs font-bold text-slate-400">Slide 4</span>
-          <h2 class="text-lg sm:text-xl font-bold text-[#1B365D] text-center mb-2">
-            題目變異數排序表
-          </h2>
-          <div class="flex-1 grid grid-cols-2 gap-4 overflow-y-auto text-[11px]">
-            <table class="border border-slate-300 text-center">
+        <div v-if="analysis && analysis.varianceSheet.length > 0" class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video relative overflow-hidden text-[12px] leading-none">
+            <table class="absolute left-[14%] top-[2.5%] h-[95%] w-[36%] table-fixed border-collapse border border-black text-center">
+              <colgroup><col style="width:20%"><col style="width:21.875%"><col style="width:18.125%"><col style="width:20%"><col style="width:20%"></colgroup>
               <thead class="bg-[#C6EFCE]">
                 <tr>
-                  <th class="p-1 border border-slate-300">題號</th>
-                  <th class="p-1 border border-slate-300">變異數</th>
-                  <th class="p-1 border border-slate-300">A</th>
-                  <th class="p-1 border border-slate-300">B</th>
-                  <th class="p-1 border border-slate-300">C</th>
+                  <th class="border border-black">題號</th>
+                  <th class="border border-black">變異數</th>
+                  <th class="border border-black">A</th>
+                  <th class="border border-black">B</th>
+                  <th class="border border-black">C</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(it, idx) in previewLeftItems" :key="idx" :class="idx % 2 === 1 ? 'bg-[#E6E6E6]' : ''">
-                  <td class="p-0.5 border border-slate-300">{{ it.題號 }}</td>
-                  <td class="p-0.5 border border-slate-300">{{ it.標準差 }}</td>
-                  <td class="p-0.5 border border-slate-300">{{ it.A }}</td>
-                  <td class="p-0.5 border border-slate-300">{{ it.B }}</td>
-                  <td class="p-0.5 border border-slate-300">{{ it.C }}</td>
+                <tr v-for="(it, idx) in previewLeftItems" :key="idx" :class="idx % 2 === 0 ? 'bg-[#E6E6E6]' : ''">
+                  <td class="border border-black">{{ it.題號 }}</td>
+                  <td class="border border-black">{{ it.標準差 }}</td>
+                  <td class="border border-black">{{ it.A }}</td>
+                  <td class="border border-black">{{ it.B }}</td>
+                  <td class="border border-black">{{ it.C }}</td>
                 </tr>
               </tbody>
             </table>
-            <table class="border border-slate-300 text-center">
+            <table class="absolute left-[50%] top-[2.5%] h-[95%] w-[36%] table-fixed border-collapse border border-black text-center">
+              <colgroup><col style="width:18.54%"><col style="width:21.46%"><col style="width:20%"><col style="width:20%"><col style="width:20%"></colgroup>
               <thead class="bg-[#C6EFCE]">
                 <tr>
-                  <th class="p-1 border border-slate-300">題號</th>
-                  <th class="p-1 border border-slate-300">變異數</th>
-                  <th class="p-1 border border-slate-300">A</th>
-                  <th class="p-1 border border-slate-300">B</th>
-                  <th class="p-1 border border-slate-300">C</th>
+                  <th class="border border-black">題號</th>
+                  <th class="border border-black">變異數</th>
+                  <th class="border border-black">A</th>
+                  <th class="border border-black">B</th>
+                  <th class="border border-black">C</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(it, idx) in previewRightItems" :key="idx" :class="idx % 2 === 1 ? 'bg-[#E6E6E6]' : ''">
-                  <td class="p-0.5 border border-slate-300">{{ it.題號 }}</td>
-                  <td class="p-0.5 border border-slate-300">{{ it.標準差 }}</td>
-                  <td class="p-0.5 border border-slate-300">{{ it.A }}</td>
-                  <td class="p-0.5 border border-slate-300">{{ it.B }}</td>
-                  <td class="p-0.5 border border-slate-300">{{ it.C }}</td>
+                <tr v-for="(it, idx) in previewRightItems" :key="idx" :class="idx % 2 === 0 ? 'bg-[#E6E6E6]' : ''">
+                  <td class="border border-black">{{ it.題號 }}</td>
+                  <td class="border border-black">{{ it.標準差 }}</td>
+                  <td class="border border-black">{{ it.A }}</td>
+                  <td class="border border-black">{{ it.B }}</td>
+                  <td class="border border-black">{{ it.C }}</td>
                 </tr>
               </tbody>
             </table>
-          </div>
         </div>
 
         <!-- Slide 5: Student Distribution (If available) -->
-        <div v-if="studentResult" class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video p-6 flex flex-col justify-between relative overflow-hidden">
-          <span class="absolute top-3 right-4 text-xs font-bold text-slate-400">Slide {{ previewSlideCount }}</span>
-          <h2 class="text-lg sm:text-xl font-bold text-[#1B365D] text-center mb-2">
+        <div v-if="studentResult" class="bg-white border-2 border-slate-300 rounded-xl shadow-md aspect-video relative overflow-hidden">
+          <h2 class="absolute left-[12.5%] top-[5.3%] h-[8%] w-[34%] text-[22px] font-normal text-black">
             學生等級比例分布
           </h2>
-          <div class="flex-1 grid grid-cols-2 gap-6 items-center">
-            <div class="flex items-center justify-center">
-              <img v-if="pieChartImage" :src="pieChartImage" class="max-h-52 object-contain" />
-              <div v-else class="text-xs text-slate-400">圓餅圖生成中...</div>
-            </div>
-            <div class="space-y-3">
-              <div class="flex gap-2 justify-end">
-                <span class="bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded">基礎門檻：{{ effectiveThresholds.基礎 }} 題</span>
-                <span class="bg-slate-700 text-white text-xs font-bold px-3 py-1 rounded">精熟門檻：{{ effectiveThresholds.精熟 }} 題</span>
-              </div>
-              <table class="w-full border border-slate-300 text-xs text-center">
-                <thead class="bg-[#C6EFCE]">
+          <div class="absolute left-[1.875%] top-[15.33%] h-[63.33%] w-[35.625%]">
+            <img v-if="pieChartImage" :src="pieChartImage" class="h-full w-full object-fill" />
+            <div v-else class="text-xs text-slate-400">圓餅圖生成中...</div>
+          </div>
+          <table class="absolute left-[39.1%] top-[21.9%] h-[47.4%] w-[55.8%] table-fixed border border-[#C65911] border-collapse text-center text-[17px] leading-none">
+                <colgroup><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"></colgroup>
+                <thead class="bg-[#ED7D31] text-white">
                   <tr>
-                    <th class="p-1.5 border border-slate-300">最低能力</th>
-                    <th class="p-1.5 border border-slate-300">答對題數</th>
-                    <th class="p-1.5 border border-slate-300">全體</th>
-                    <th class="p-1.5 border border-slate-300">人數</th>
-                    <th class="p-1.5 border border-slate-300">百分比</th>
+                    <th class="border border-white border-t-[#C65911] border-b-[#ED7D31] border-l-[#C65911] font-bold">最低能力</th>
+                    <th class="border border-white border-t-[#C65911] border-b-[#ED7D31] font-bold">答對題數</th>
+                    <th class="border border-white border-t-[#C65911] border-b-[#ED7D31] font-bold">全體</th>
+                    <th class="border border-white border-t-[#C65911] border-b-[#ED7D31] font-bold">人數</th>
+                    <th class="border border-white border-t-[#C65911] border-b-[#ED7D31] border-r-[#C65911] font-bold">百分比</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody class="bg-white text-black">
                   <tr>
-                    <td class="p-1 border border-slate-300"></td>
-                    <td class="p-1 border border-slate-300">0 - {{ Math.max(0, effectiveThresholds.基礎 - 1) }}</td>
-                    <td class="p-1 border border-slate-300">待加強</td>
-                    <td class="p-1 border border-slate-300 text-right">{{ previewSummary.needs.count }}</td>
-                    <td class="p-1 border border-slate-300 text-right">{{ previewSummary.needs.pct }}%</td>
+                    <td class="border border-[#ED7D31]"></td>
+                    <td class="border border-[#ED7D31]">0-{{ Math.max(0, effectiveThresholds.基礎 - 1) }}</td>
+                    <td class="border border-[#ED7D31]">待加強</td>
+                    <td class="border border-[#ED7D31]">{{ previewSummary.needs.count }}</td>
+                    <td class="border border-[#ED7D31]">{{ previewSummary.needs.pct }}%</td>
                   </tr>
                   <tr>
-                    <td class="p-1 border border-slate-300 font-bold text-amber-700">基礎</td>
-                    <td class="p-1 border border-slate-300">{{ effectiveThresholds.基礎 }} - {{ Math.max(effectiveThresholds.基礎, effectiveThresholds.精熟 - 1) }}</td>
-                    <td class="p-1 border border-slate-300">基礎</td>
-                    <td class="p-1 border border-slate-300 text-right">{{ previewSummary.basic.count }}</td>
-                    <td class="p-1 border border-slate-300 text-right">{{ previewSummary.basic.pct }}%</td>
+                    <td class="border border-[#ED7D31] text-[#7030A0]">基礎</td>
+                    <td class="border border-[#ED7D31]">{{ effectiveThresholds.基礎 }}-{{ Math.max(effectiveThresholds.基礎, effectiveThresholds.精熟 - 1) }}</td>
+                    <td class="border border-[#ED7D31]">基礎</td>
+                    <td class="border border-[#ED7D31]">{{ previewSummary.basic.count }}</td>
+                    <td class="border border-[#ED7D31]">{{ previewSummary.basic.pct }}%</td>
                   </tr>
                   <tr>
-                    <td class="p-1 border border-slate-300 font-bold text-slate-700">精熟</td>
-                    <td class="p-1 border border-slate-300">{{ effectiveThresholds.精熟 }} - {{ analysis.nItems }}</td>
-                    <td class="p-1 border border-slate-300">精熟</td>
-                    <td class="p-1 border border-slate-300 text-right">{{ previewSummary.mastery.count }}</td>
-                    <td class="p-1 border border-slate-300 text-right">{{ previewSummary.mastery.pct }}%</td>
+                    <td class="border border-[#ED7D31] text-[#7030A0]">精熟</td>
+                    <td class="border border-[#ED7D31]">{{ effectiveThresholds.精熟 }}-{{ analysis.nItems }}</td>
+                    <td class="border border-[#ED7D31]">精熟</td>
+                    <td class="border border-[#ED7D31]">{{ previewSummary.mastery.count }}</td>
+                    <td class="border border-[#ED7D31]">{{ previewSummary.mastery.pct }}%</td>
                   </tr>
-                  <tr class="bg-slate-100 font-bold">
-                    <td colspan="3" class="p-1 border border-slate-300">合計</td>
-                    <td class="p-1 border border-slate-300 text-right">{{ studentResult.totalValid }}</td>
-                    <td class="p-1 border border-slate-300 text-right">100%</td>
+                  <tr class="font-bold">
+                    <td class="border border-[#ED7D31]"></td>
+                    <td class="border border-[#ED7D31]"></td>
+                    <td class="border border-[#ED7D31]">合計</td>
+                    <td class="border border-[#ED7D31]">{{ studentResult.totalValid }}</td>
+                    <td class="border border-[#ED7D31]">100%</td>
                   </tr>
                 </tbody>
-              </table>
-            </div>
+          </table>
+          <div class="absolute left-[47.22%] top-[37.55%] flex h-[6.73%] w-[4.75%] items-center justify-center border border-black bg-white text-2xl font-bold">
+            {{ effectiveThresholds.基礎 }}
           </div>
+          <div class="absolute left-[47.22%] top-[46.96%] flex h-[6.73%] w-[4.75%] items-center justify-center border border-black bg-white text-2xl font-bold">
+            {{ effectiveThresholds.精熟 }}
+          </div>
+          <div class="absolute bottom-[2.2%] right-[7%] text-sm text-[#A6A6A6]">{{ previewSlideCount }}</div>
         </div>
       </div>
     </div>
@@ -312,7 +304,8 @@ import {
   Code 
 } from 'lucide-vue-next';
 import { saveAs } from 'file-saver';
-import { FIELD_LABELS, ROUND_LABELS } from '../../core/constants.js';
+import { FIELD_LABELS, ROUND_LABELS, VARIANCE_ITEMS_PER_SLIDE } from '../../core/constants.js';
+import { SAAAMath } from '../../core/math.js';
 import { generateExcelWorkbook } from '../../core/excelGenerator.js';
 import { generateHtmlReport } from '../../core/htmlReportGenerator.js';
 import { generatePptxReport } from '../../core/pptxGenerator.js';
@@ -372,25 +365,20 @@ const togglePreview = () => {
 const previewSlideCount = computed(() => {
   if (!props.analysis) return 0;
   const totalItems = props.analysis.varianceSheet.length;
-  const itemsPerSlide = totalItems <= 16 ? totalItems : 20;
-  const numItemSlides = Math.ceil(totalItems / itemsPerSlide) || 1;
+  const numItemSlides = Math.ceil(totalItems / VARIANCE_ITEMS_PER_SLIDE);
   return 3 + numItemSlides + (props.studentResult ? 1 : 0);
 });
 
 const previewLeftItems = computed(() => {
   if (!props.analysis) return [];
-  const totalItems = props.analysis.varianceSheet.length;
-  const itemsPerSlide = totalItems <= 16 ? totalItems : 20;
-  const sub = props.analysis.varianceSheet.slice(0, itemsPerSlide);
+  const sub = props.analysis.varianceSheet.slice(0, VARIANCE_ITEMS_PER_SLIDE);
   const mid = Math.ceil(sub.length / 2);
   return sub.slice(0, mid);
 });
 
 const previewRightItems = computed(() => {
   if (!props.analysis) return [];
-  const totalItems = props.analysis.varianceSheet.length;
-  const itemsPerSlide = totalItems <= 16 ? totalItems : 20;
-  const sub = props.analysis.varianceSheet.slice(0, itemsPerSlide);
+  const sub = props.analysis.varianceSheet.slice(0, VARIANCE_ITEMS_PER_SLIDE);
   const mid = Math.ceil(sub.length / 2);
   return sub.slice(mid);
 });
@@ -402,9 +390,9 @@ const previewSummary = computed(() => {
   const b = s.find(it => it.等級 === '基礎') || { 人數: 0, 百分比: 0 };
   const m = s.find(it => it.等級 === '精熟') || { 人數: 0, 百分比: 0 };
   return {
-    needs: { count: n.人數, pct: Math.round(n.百分比 * 100) },
-    basic: { count: b.人數, pct: Math.round(b.百分比 * 100) },
-    mastery: { count: m.人數, pct: Math.round(m.百分比 * 100) }
+    needs: { count: n.人數, pct: SAAAMath.roundToEven(n.百分比 * 100) },
+    basic: { count: b.人數, pct: SAAAMath.roundToEven(b.百分比 * 100) },
+    mastery: { count: m.人數, pct: SAAAMath.roundToEven(m.百分比 * 100) }
   };
 });
 

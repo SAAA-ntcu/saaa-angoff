@@ -1,3 +1,5 @@
+import { SAAAMath } from './math.js';
+
 export function generateHtmlReport({ analysis, studentResult = null }) {
   const now = new Date();
   const dateStr = now.toLocaleString('zh-TW');
@@ -15,9 +17,9 @@ export function generateHtmlReport({ analysis, studentResult = null }) {
   const thresholdRows = ['基礎', '精熟'].map(lvl => `
     <tr>
       <td>${escape(lvl)}</td>
-      <td>${analysis.thresholds.raw[lvl].toFixed(2)}</td>
+      <td>${SAAAMath.formatFixed(analysis.thresholds.raw[lvl], 2)}</td>
       <td><strong>${analysis.thresholds.current[lvl]}</strong></td>
-      <td>${analysis.thresholds.standardDeviation[lvl].toFixed(2)}</td>
+      <td>${SAAAMath.formatFixed(analysis.thresholds.standardDeviation[lvl], 2)}</td>
     </tr>
   `).join('');
 
@@ -27,7 +29,7 @@ export function generateHtmlReport({ analysis, studentResult = null }) {
       <tr>
         <td>${escape(s.等級)}</td>
         <td>${s.人數.toLocaleString()}</td>
-        <td>${(s.百分比 * 100).toFixed(1)}%</td>
+        <td>${SAAAMath.formatPercent(s.百分比, 1)}</td>
       </tr>
     `).join('');
 

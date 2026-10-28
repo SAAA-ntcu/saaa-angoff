@@ -23,13 +23,13 @@
       <MetricCard
         label="基礎門檻"
         :value="analysis.thresholds.current.基礎"
-        :note="`原始平均 ${analysis.thresholds.raw.基礎.toFixed(2)}`"
+        :note="`原始平均 ${SAAAMath.formatFixed(analysis.thresholds.raw.基礎, 2)}`"
         accentColor="#F59E0B"
       />
       <MetricCard
         label="精熟門檻"
         :value="analysis.thresholds.current.精熟"
-        :note="`原始平均 ${analysis.thresholds.raw.精熟.toFixed(2)}`"
+        :note="`原始平均 ${SAAAMath.formatFixed(analysis.thresholds.raw.精熟, 2)}`"
         accentColor="#64748B"
       />
     </div>
@@ -157,6 +157,7 @@ import {
 import MetricCard from '../layout/MetricCard.vue';
 import { buildThresholdComparison } from '../../core/analysis.js';
 import { buildConsistencyChartOption } from '../../core/chartRenderer.js';
+import { SAAAMath } from '../../core/math.js';
 
 const props = defineProps({
   analysis: { type: Object, default: null },

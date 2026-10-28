@@ -1,4 +1,5 @@
 import * as echarts from 'echarts';
+import { SAAAMath } from './math.js';
 
 /**
  * Build ECharts option for Consistency Scatter Plot (matching R 04_plots.R with clean modern styling)
@@ -16,8 +17,10 @@ export function buildConsistencyChartOption(levelName, expertScores, avg, sd) {
   const pointsData = [...expertScores, avg];
 
   const allY = [...pointsData, high, avg, low];
-  const minY = Math.max(0, Math.floor(Math.min(...allY) - 2));
-  const maxY = Math.ceil(Math.max(...allY) + 3);
+  // The original reports use even-numbered ticks and leave a small, balanced
+  // margin around the observed scores.
+  const minY = Math.max(0, Math.floor((Math.min(...allY) - 2) / 2) * 2);
+  const maxY = Math.ceil((Math.max(...allY) + 2) / 2) * 2;
 
   // Line segments that span experts 1~N and stop before '平均'
   const highLineData = Array(numExperts).fill(high).concat([null]);
@@ -29,22 +32,18 @@ export function buildConsistencyChartOption(levelName, expertScores, avg, sd) {
   const lowTag = `${levelName}-1`;
   const pointTag = `${levelName}最低`;
 
-  // Dynamic y-axis split calculation so 35 items doesn't produce 35 dense grid lines
-  const ySpan = maxY - minY;
-  let splitNum = 6;
-  if (ySpan > 25) splitNum = 7;
-  else if (ySpan > 15) splitNum = 6;
-  else splitNum = Math.max(3, Math.min(ySpan, 5));
-
   return {
+    // PPTX screenshots are captured immediately after setOption; disable
+    // transitions so marks are present in the exported bitmap on first paint.
+    animation: false,
     title: {
       text: `各委員預估達${levelName}最低題數`,
       left: 'center',
       top: 12,
       textStyle: {
-        fontSize: 18,
+        fontSize: 48,
         fontWeight: 'bold',
-        color: '#1E293B',
+        color: '#1F1F1F',
         fontFamily: 'Microsoft JhengHei, sans-serif'
       }
     },
@@ -58,8 +57,12 @@ export function buildConsistencyChartOption(levelName, expertScores, avg, sd) {
       }
     },
     legend: {
-      bottom: 8,
-      itemGap: 24,
+      // The reference deck places the legend just below the rotated labels,
+      // leaving a clear gap before the threshold summary beneath the chart.
+      bottom: 190,
+      itemGap: 28,
+      itemWidth: 36,
+      itemHeight: 5,
       data: [
         { name: levelTag, icon: 'line', itemStyle: { color: '#ED7D31' } },
         { name: avgTag, icon: 'line', itemStyle: { color: '#A5A5A5' } },
@@ -67,50 +70,48 @@ export function buildConsistencyChartOption(levelName, expertScores, avg, sd) {
         { name: pointTag, icon: 'circle', itemStyle: { color: '#4472C4' } }
       ],
       textStyle: {
-        fontSize: 12,
+        fontSize: 30,
         fontFamily: 'Microsoft JhengHei, sans-serif',
-        color: '#475569'
+        color: '#404040'
       }
     },
     grid: {
-      top: 52,
-      bottom: 65,
-      left: 55,
-      right: 45
+      top: 100,
+      // Leave room for the original 45-degree expert labels.
+      bottom: 390,
+      left: 112,
+      right: 58
     },
     xAxis: {
       type: 'category',
       data: xLabels,
       axisLabel: {
         interval: 0,
-        rotate: numExperts > 10 ? 35 : 0,
-        fontSize: numExperts > 10 ? 11 : 12,
-        fontWeight: 'bold',
-        color: '#475569',
-        margin: 12,
+        rotate: numExperts > 10 ? 45 : 0,
+        fontSize: numExperts > 10 ? 34 : 36,
+        color: '#666666',
+        margin: 18,
         fontFamily: 'Microsoft JhengHei, sans-serif'
       },
-      axisTick: { alignWithLabel: true, lineStyle: { color: '#CBD5E1' } },
-      axisLine: { lineStyle: { color: '#CBD5E1' } },
+      axisTick: { alignWithLabel: true, lineStyle: { color: '#BFBFBF' } },
+      axisLine: { lineStyle: { color: '#BFBFBF' } },
       splitLine: { show: false }
     },
     yAxis: {
       type: 'value',
       min: minY,
       max: maxY,
-      minInterval: 1,
-      splitNumber: splitNum,
+      interval: 2,
       axisLabel: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#475569',
+        fontSize: 30,
+        color: '#404040',
         fontFamily: 'Microsoft JhengHei, sans-serif'
       },
-      axisTick: { show: true, lineStyle: { color: '#CBD5E1' } },
-      axisLine: { show: true, lineStyle: { color: '#CBD5E1' } },
+      axisTick: { show: false },
+      axisLine: { show: false },
       splitLine: {
         show: true,
-        lineStyle: { color: '#F1F5F9', type: 'solid' }
+        lineStyle: { color: '#D9D9D9', type: 'solid', width: 1 }
       }
     },
     series: [
@@ -120,7 +121,7 @@ export function buildConsistencyChartOption(levelName, expertScores, avg, sd) {
         type: 'line',
         data: highLineData,
         symbol: 'none',
-        lineStyle: { color: '#ED7D31', width: 2.2 },
+        lineStyle: { color: '#ED7D31', width: 4 },
         itemStyle: { color: '#ED7D31' },
         connectNulls: false,
         z: 2
@@ -131,7 +132,7 @@ export function buildConsistencyChartOption(levelName, expertScores, avg, sd) {
         type: 'line',
         data: avgLineData,
         symbol: 'none',
-        lineStyle: { color: '#A5A5A5', width: 2.2 },
+        lineStyle: { color: '#A5A5A5', width: 4 },
         itemStyle: { color: '#A5A5A5' },
         connectNulls: false,
         z: 2
@@ -142,7 +143,7 @@ export function buildConsistencyChartOption(levelName, expertScores, avg, sd) {
         type: 'line',
         data: lowLineData,
         symbol: 'none',
-        lineStyle: { color: '#FFC000', width: 2.2 },
+        lineStyle: { color: '#FFC000', width: 4 },
         itemStyle: { color: '#FFC000' },
         connectNulls: false,
         z: 2
@@ -152,16 +153,16 @@ export function buildConsistencyChartOption(levelName, expertScores, avg, sd) {
         name: pointTag,
         type: 'scatter',
         data: pointsData,
-        symbolSize: numExperts > 10 ? 11 : 13,
+        symbolSize: numExperts > 10 ? 23 : 25,
         itemStyle: { color: '#4472C4' },
         label: {
           show: true,
-          position: 'top',
-          distance: 5,
+          position: 'right',
+          distance: 4,
           formatter: '{c}',
-          fontSize: numExperts > 10 ? 11 : 12,
+          fontSize: numExperts > 10 ? 36 : 38,
           fontWeight: 'bold',
-          color: '#1E293B',
+          color: '#000000',
           fontFamily: 'Microsoft JhengHei, sans-serif'
         },
         z: 3
@@ -181,20 +182,10 @@ export function buildPieChartOption(summary) {
   ];
 
   return {
-    title: {
-      text: '學生等級比例分布',
-      left: 'center',
-      top: 10,
-      textStyle: { fontSize: 18, fontWeight: 'bold', color: '#1E293B', fontFamily: 'Microsoft JhengHei, sans-serif' }
-    },
+    animation: false,
     tooltip: {
       trigger: 'item',
-      formatter: '{b}：{c} 人 ({d}%)'
-    },
-    legend: {
-      bottom: 8,
-      data: ['待加強', '基礎', '精熟'],
-      textStyle: { fontSize: 12, fontFamily: 'Microsoft JhengHei, sans-serif' }
+      formatter: (params) => `${params.name}：${params.value} 人 (${SAAAMath.roundToEven(params.percent)}%)`
     },
     series: [
       {
@@ -202,17 +193,35 @@ export function buildPieChartOption(summary) {
         type: 'pie',
         radius: ['0%', '72%'],
         center: ['50%', '50%'],
+        startAngle: 90,
+        clockwise: false,
         data: pieData,
-        avoidLabelOverlap: true,
+        avoidLabelOverlap: false,
+        itemStyle: { borderColor: '#FFFFFF', borderWidth: 1 },
         label: {
           show: true,
-          formatter: '{b}\n{d}%',
-          fontSize: 13,
-          fontWeight: 'bold',
-          color: '#1E293B',
-          fontFamily: 'Microsoft JhengHei, sans-serif'
+          position: 'inside',
+          formatter: (params) => `{name|${params.name}}\n{percent|${SAAAMath.roundToEven(params.percent)}%}`,
+          backgroundColor: 'rgba(255,255,255,0.72)',
+          padding: [5, 8],
+          borderRadius: 3,
+          rich: {
+            name: {
+              fontSize: 38,
+              color: '#1F1F1F',
+              fontFamily: 'Microsoft JhengHei, sans-serif',
+              lineHeight: 46
+            },
+            percent: {
+              fontSize: 44,
+              fontWeight: 'bold',
+              color: '#000000',
+              fontFamily: 'Microsoft JhengHei, sans-serif',
+              lineHeight: 50
+            }
+          }
         },
-        labelLine: { show: true, length: 15, length2: 12 }
+        labelLine: { show: false }
       }
     ]
   };

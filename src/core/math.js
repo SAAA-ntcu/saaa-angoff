@@ -27,6 +27,38 @@ export class SAAAMath {
   }
 
   /**
+   * R's round() behavior: ties go to the even integer at the requested precision.
+   */
+  static roundToEven(val, digits = 0) {
+    if (val === null || val === undefined || !Number.isFinite(Number(val))) return NaN;
+    const factor = 10 ** digits;
+    const scaled = Number(val) * factor;
+    if (!Number.isFinite(scaled)) return Number(val);
+
+    const lower = Math.floor(scaled);
+    const fraction = scaled - lower;
+    const tolerance = Number.EPSILON * Math.max(1, Math.abs(scaled)) * 2;
+    let rounded;
+
+    if (Math.abs(fraction - 0.5) <= tolerance) {
+      rounded = lower % 2 === 0 ? lower : lower + 1;
+    } else {
+      rounded = Math.round(scaled);
+    }
+
+    return rounded / factor;
+  }
+
+  static formatFixed(val, digits = 2) {
+    const rounded = this.roundToEven(val, digits);
+    return Number.isFinite(rounded) ? rounded.toFixed(digits) : String(rounded);
+  }
+
+  static formatPercent(fraction, digits = 1) {
+    return `${this.formatFixed(Number(fraction) * 100, digits)}%`;
+  }
+
+  /**
    * 切截分數取整演算法 (對齊 r-angoff 02_analysis.R round_cut_score)
    * @param {number} x 
    * @param {'half_up' | 'ceiling' | 'floor' | 'bankers'} method 
@@ -41,12 +73,7 @@ export class SAAAMath {
       case 'floor':
         return Math.floor(x);
       case 'bankers': {
-        const i = Math.floor(x);
-        const f = x - i;
-        if (Math.abs(f - 0.5) < 1e-12) {
-          return i % 2 === 0 ? i : i + 1;
-        }
-        return Math.round(x);
+        return this.roundToEven(x);
       }
       default:
         return Math.floor(x + 0.5);

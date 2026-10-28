@@ -49,15 +49,15 @@
               <tr v-for="item in sortedItemStats" :key="item.題號" class="hover:bg-slate-50">
                 <td class="px-2.5 py-1.5 text-center font-bold text-slate-800">{{ item.題號 }}</td>
                 <td class="px-2.5 py-1.5 text-center font-semibold text-rose-600">
-                  {{ item.標準差 === 0 ? '0' : item.標準差.toFixed(2) }}
+                  {{ item.標準差 === 0 ? '0' : SAAAMath.formatFixed(item.標準差, 2) }}
                 </td>
                 <td class="px-2.5 py-1.5 text-center text-slate-600">{{ item.有效人數 }}</td>
                 <td class="px-2.5 py-1.5 text-center text-blue-700 bg-blue-50/20">{{ item.待加強人數 }}</td>
-                <td class="px-2.5 py-1.5 text-center text-blue-700 bg-blue-50/20">{{ Math.round(item.待加強 * 100) }}%</td>
+                <td class="px-2.5 py-1.5 text-center text-blue-700 bg-blue-50/20">{{ SAAAMath.roundToEven(item.待加強 * 100) }}%</td>
                 <td class="px-2.5 py-1.5 text-center text-amber-700 bg-amber-50/20">{{ item.基礎人數 }}</td>
-                <td class="px-2.5 py-1.5 text-center text-amber-700 bg-amber-50/20">{{ Math.round(item.基礎 * 100) }}%</td>
+                <td class="px-2.5 py-1.5 text-center text-amber-700 bg-amber-50/20">{{ SAAAMath.roundToEven(item.基礎 * 100) }}%</td>
                 <td class="px-2.5 py-1.5 text-center text-slate-700 bg-slate-100/20">{{ item.精熟人數 }}</td>
-                <td class="px-2.5 py-1.5 text-center text-slate-700 bg-slate-100/20">{{ Math.round(item.精熟 * 100) }}%</td>
+                <td class="px-2.5 py-1.5 text-center text-slate-700 bg-slate-100/20">{{ SAAAMath.roundToEven(item.精熟 * 100) }}%</td>
               </tr>
             </tbody>
           </table>
@@ -71,6 +71,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import { AlertCircle, BarChart2, ListOrdered } from 'lucide-vue-next';
+import { SAAAMath } from '../../core/math.js';
 
 const props = defineProps({
   analysis: { type: Object, default: null },
@@ -84,7 +85,7 @@ let resizeObserver = null;
 const sortedItemStats = computed(() => {
   if (!props.analysis || !props.analysis.itemStats) return [];
   return [...props.analysis.itemStats].sort((a, b) => {
-    if (Math.abs(b.標準差 - a.標準差) > 1e-9) {
+    if (b.標準差 !== a.標準差) {
       return b.標準差 - a.標準差;
     }
     return a.題號 - b.題號;

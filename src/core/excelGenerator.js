@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { SAAAMath } from './math.js';
 
 export async function generateExcelWorkbook({ analysis, studentResult = null, audit = {} }) {
   const wb = new ExcelJS.Workbook();
@@ -54,14 +55,14 @@ export async function generateExcelWorkbook({ analysis, studentResult = null, au
     ws1.addRow({
       題號: item.題號,
       題目欄位: item.題目欄位,
-      標準差: Number(item.標準差.toFixed(4)),
+      標準差: item.標準差,
       有效人數: item.有效人數,
       待加強人數: item.待加強人數,
       基礎人數: item.基礎人數,
       精熟人數: item.精熟人數,
-      待加強: Number(item.待加強.toFixed(4)),
-      基礎: Number(item.基礎.toFixed(4)),
-      精熟: Number(item.精熟.toFixed(4))
+      待加強: item.待加強,
+      基礎: item.基礎,
+      精熟: item.精熟
     });
   });
   applyHeaderStyle(ws1);
@@ -101,9 +102,9 @@ export async function generateExcelWorkbook({ analysis, studentResult = null, au
   ['基礎', '精熟'].forEach(lvl => {
     ws4.addRow({
       等級: lvl,
-      原始平均: Number(analysis.thresholds.raw[lvl].toFixed(4)),
+      原始平均: analysis.thresholds.raw[lvl],
       當前門檻: analysis.thresholds.current[lvl],
-      標準差: Number(analysis.thresholds.standardDeviation[lvl].toFixed(4))
+      標準差: analysis.thresholds.standardDeviation[lvl]
     });
   });
   applyHeaderStyle(ws4);
@@ -121,7 +122,7 @@ export async function generateExcelWorkbook({ analysis, studentResult = null, au
       ws5.addRow({
         等級: s.等級,
         人數: s.人數,
-        百分比: `${(s.百分比 * 100).toFixed(1)}%`
+        百分比: SAAAMath.formatPercent(s.百分比, 1)
       });
     });
     applyHeaderStyle(ws5);

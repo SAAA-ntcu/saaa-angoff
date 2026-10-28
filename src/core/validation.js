@@ -9,15 +9,6 @@ export function selectItemColumns(headers, itemCount = 'auto') {
   if (!headers || !Array.isArray(headers)) return [];
   const itemCols = headers.filter(h => /^題號/i.test(String(h).trim()));
   if (itemCols.length === 0) return [];
-
-  // Sort by the numeric value inside the column name
-  itemCols.sort((a, b) => {
-    const numA = parseInt(String(a).replace(/[^\d]/g, ''), 10) || 0;
-    const numB = parseInt(String(b).replace(/[^\d]/g, ''), 10) || 0;
-    if (numA !== numB) return numA - numB;
-    return String(a).localeCompare(String(b));
-  });
-
   if (!itemCount || itemCount === 'auto') {
     return itemCols;
   }
@@ -27,10 +18,22 @@ export function selectItemColumns(headers, itemCount = 'auto') {
     return itemCols;
   }
 
-  return itemCols.slice(0, Math.min(count, itemCols.length));
+  // Match r-angoff: automatic selection preserves source order; explicit item
+  // counts sort by the first number in the item column name before truncating.
+  const sortedItemCols = [...itemCols].sort((a, b) => {
+    const matchA = String(a).match(/\d+/);
+    const matchB = String(b).match(/\d+/);
+    const numA = matchA ? parseInt(matchA[0], 10) : NaN;
+    const numB = matchB ? parseInt(matchB[0], 10) : NaN;
+    if (Number.isNaN(numA) !== Number.isNaN(numB)) return Number.isNaN(numA) ? 1 : -1;
+    if (!Number.isNaN(numA) && numA !== numB) return numA - numB;
+    return String(a).localeCompare(String(b));
+  });
+
+  return sortedItemCols.slice(0, Math.min(count, sortedItemCols.length));
 }
 
-export function findScoreColumnCandidates(headers) {
+export function findScoreColumnCandidates(headers, rows = []) {
   if (!headers || !Array.isArray(headers)) return [];
   const normalizedHeaders = headers.map(h => ({ original: h, norm: normalizeColumnName(h) }));
   const preferred = [];
@@ -43,7 +46,33 @@ export function findScoreColumnCandidates(headers) {
     }
   }
 
-  return preferred;
+  if (preferred.length > 0 || !Array.isArray(rows) || rows.length === 0) {
+    return preferred;
+  }
+
+  const isNumericColumn = (column) => {
+    const values = rows
+      .map(row => row?.[column])
+      .filter(value => {
+        if (value === undefined || value === null) return false;
+        const text = String(value).trim();
+        return text !== '' && !['NA', 'N/A', 'NAN'].includes(text.toUpperCase());
+      });
+    return values.length > 0 && values.every(value => {
+      if (typeof value === 'boolean') return false;
+      return Number.isFinite(Number(String(value).trim()));
+    });
+  };
+
+  return normalizedHeaders.filter(h => isNumericColumn(h.original)).map(h => h.original);
+}
+
+export function parseFiniteNumericValue(raw) {
+  if (raw === undefined || raw === null) return NaN;
+  const text = String(raw).trim();
+  if (text === '') return NaN;
+  const value = Number(text);
+  return Number.isFinite(value) ? value : NaN;
 }
 
 export function validateExpertData(rows, headers, missingPolicy = 'error', itemCount = 'auto') {
@@ -183,8 +212,8 @@ export function validateStudentData(rows, scoreCol, maxScore = null) {
 
   for (let i = 0; i < rows.length; i++) {
     const raw = rows[i][scoreCol];
-    const num = Number(raw);
-    if (raw === undefined || raw === null || raw === '' || isNaN(num) || !isFinite(num)) {
+    const num = parseFiniteNumericValue(raw);
+    if (!Number.isFinite(num)) {
       invalidCount++;
     } else {
       validScores.push(num);

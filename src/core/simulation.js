@@ -1,5 +1,5 @@
 import { ANGOFF_LEVELS } from './constants.js';
-import { validateStudentData, validateThresholds } from './validation.js';
+import { parseFiniteNumericValue, validateStudentData, validateThresholds } from './validation.js';
 
 export function classifyStudents(rows, scoreCol, baseThreshold, masteryThreshold, maxScore) {
   const thresholdValidation = validateThresholds(baseThreshold, masteryThreshold, maxScore);
@@ -17,11 +17,8 @@ export function classifyStudents(rows, scoreCol, baseThreshold, masteryThreshold
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const rawVal = row[scoreCol];
-    const score = Number(rawVal);
-    if (rawVal === undefined || rawVal === null || rawVal === '' || isNaN(score) || !isFinite(score)) {
-      continue;
-    }
+    const score = parseFiniteNumericValue(row[scoreCol]);
+    if (!Number.isFinite(score)) continue;
 
     let level;
     if (score < baseThreshold) {

@@ -229,7 +229,7 @@ const handleStudentUpload = async (file) => {
     studentData.value = res.rows;
     studentHeaders.value = res.headers;
     studentFileName.value = file.name;
-    const candidates = findScoreColumnCandidates(res.headers);
+    const candidates = findScoreColumnCandidates(res.headers, res.rows);
     if (candidates.length > 0) {
       scoreCol.value = candidates[0];
     } else {

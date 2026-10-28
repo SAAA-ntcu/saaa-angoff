@@ -20,12 +20,12 @@
             <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-3.5 text-center">
               <span class="text-[11px] font-bold text-amber-800 block mb-0.5">基礎門檻 (模擬值)</span>
               <span class="text-3xl font-extrabold text-amber-700 block">{{ simulatedBase }}</span>
-              <span class="text-[11px] text-amber-600 mt-1 block">原始平均 {{ analysis.thresholds.raw.基礎.toFixed(2) }}</span>
+              <span class="text-[11px] text-amber-600 mt-1 block">原始平均 {{ SAAAMath.formatFixed(analysis.thresholds.raw.基礎, 2) }}</span>
             </div>
             <div class="bg-slate-100 border border-slate-300 rounded-xl p-3.5 text-center">
               <span class="text-[11px] font-bold text-slate-700 block mb-0.5">精熟門檻 (模擬值)</span>
               <span class="text-3xl font-extrabold text-slate-800 block">{{ simulatedMastery }}</span>
-              <span class="text-[11px] text-slate-500 mt-1 block">原始平均 {{ analysis.thresholds.raw.精熟.toFixed(2) }}</span>
+              <span class="text-[11px] text-slate-500 mt-1 block">原始平均 {{ SAAAMath.formatFixed(analysis.thresholds.raw.精熟, 2) }}</span>
             </div>
           </div>
 
@@ -146,7 +146,7 @@
               <td style="text-align: center; font-weight: 500;">0 - {{ Math.max(0, simulatedBase - 1) }}</td>
               <td style="text-align: center; color: #2563EB; font-weight: 600;">待加強</td>
               <td style="text-align: right; font-weight: 600;">{{ studentSummary.needs.count.toLocaleString() }}</td>
-              <td style="text-align: right; font-weight: 600;">{{ Math.round(studentSummary.needs.pct * 100) }}%</td>
+              <td style="text-align: right; font-weight: 600;">{{ SAAAMath.roundToEven(studentSummary.needs.pct * 100) }}%</td>
             </tr>
             <tr>
               <td style="text-align: center; vertical-align: middle;">
@@ -158,7 +158,7 @@
               <td style="text-align: center; font-weight: 500;">{{ simulatedBase }} - {{ Math.max(simulatedBase, simulatedMastery - 1) }}</td>
               <td style="text-align: center; color: #D97706; font-weight: 600;">基礎</td>
               <td style="text-align: right; font-weight: 600;">{{ studentSummary.basic.count.toLocaleString() }}</td>
-              <td style="text-align: right; font-weight: 600;">{{ Math.round(studentSummary.basic.pct * 100) }}%</td>
+              <td style="text-align: right; font-weight: 600;">{{ SAAAMath.roundToEven(studentSummary.basic.pct * 100) }}%</td>
             </tr>
             <tr>
               <td style="text-align: center; vertical-align: middle;">
@@ -170,7 +170,7 @@
               <td style="text-align: center; font-weight: 500;">{{ simulatedMastery }} - {{ analysis.nItems }}</td>
               <td style="text-align: center; color: #475569; font-weight: 600;">精熟</td>
               <td style="text-align: right; font-weight: 600;">{{ studentSummary.mastery.count.toLocaleString() }}</td>
-              <td style="text-align: right; font-weight: 600;">{{ Math.round(studentSummary.mastery.pct * 100) }}%</td>
+              <td style="text-align: right; font-weight: 600;">{{ SAAAMath.roundToEven(studentSummary.mastery.pct * 100) }}%</td>
             </tr>
           </tbody>
           <tfoot>
@@ -197,6 +197,7 @@ import {
   Info 
 } from 'lucide-vue-next';
 import { classifyStudents } from '../../core/simulation.js';
+import { SAAAMath } from '../../core/math.js';
 
 const props = defineProps({
   analysis: { type: Object, default: null },
@@ -304,7 +305,7 @@ const updatePieChart = () => {
     },
     tooltip: {
       trigger: 'item',
-      formatter: '{b}：{c} 人 ({d}%)'
+      formatter: (params) => `${params.name}：${params.value} 人 (${SAAAMath.roundToEven(params.percent)}%)`
     },
     legend: {
       bottom: 8,
@@ -320,7 +321,7 @@ const updatePieChart = () => {
         data: pieData,
         label: {
           show: true,
-          formatter: '{b}\n{d}%',
+          formatter: (params) => `${params.name}\n${SAAAMath.roundToEven(params.percent)}%`,
           fontSize: 14,
           fontWeight: 'bold',
           color: '#000000',

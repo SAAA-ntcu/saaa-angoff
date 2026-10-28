@@ -1,5 +1,7 @@
 import pptxgen from 'pptxgenjs';
 import { buildConsistencyChartOption, buildPieChartOption, renderChartToBase64 } from './chartRenderer.js';
+import { SAAAMath } from './math.js';
+import { VARIANCE_ITEMS_PER_SLIDE } from './constants.js';
 
 export async function generatePptxReport({
   fieldName = '自然',
@@ -52,18 +54,18 @@ export async function generatePptxReport({
   const slide1 = pres.addSlide();
   slide1.addText(
     [
-      { text: `${fieldName}領域\n`, options: { fontSize: 44, bold: true, color: '1B365D' } },
-      { text: '標準設定會議', options: { fontSize: 44, bold: true, color: '1B365D' } }
+      { text: `${fieldName}領域\n`, options: { fontSize: 60, bold: true, color: '1B365D' } },
+      { text: '標準設定會議', options: { fontSize: 60, bold: true, color: '1B365D' } }
     ],
-    { x: 1.5, y: 1.4, w: 10.33, h: 2.2, align: 'center', fontFace: fontFam }
+    { x: 2.667, y: 1.4, w: 8, h: 1.8, align: 'center', fontFace: fontFam }
   );
 
   slide1.addText(
     [
-      { text: `第${roundCn}輪專家評分結果分析報告\n\n`, options: { fontSize: 24, bold: true, color: '595959' } },
+      { text: `第${roundCn}輪專家評分結果分析報告\n\n`, options: { fontSize: 32, bold: true, color: '595959' } },
       { text: `會議日期：${dateStr}`, options: { fontSize: 14, color: '7F7F7F' } }
     ],
-    { x: 1.5, y: 4.2, w: 10.33, h: 2.0, align: 'center', fontFace: fontFam }
+    { x: 2.667, y: 4.14, w: 8, h: 2.5, align: 'center', fontFace: fontFam }
   );
 
   // ==========================================
@@ -71,25 +73,25 @@ export async function generatePptxReport({
   // ==========================================
   const slide2 = pres.addSlide();
   slide2.addText('基礎等級門檻分析 (Cut Score)', {
-    x: 1.0, y: 0.4, w: 11.33, h: 0.6,
+    x: 2.167, y: 0.4, w: 9, h: 0.6,
     fontSize: 24, bold: true, color: '1B365D', align: 'center', fontFace: fontFam
   });
 
   if (c1) {
     slide2.addImage({
       data: c1,
-      x: 1.2, y: 1.15, w: 10.93, h: 4.55
+      x: 2.167, y: 1.3, w: 9, h: 4.5
     });
   }
 
   slide2.addText(
     [
-      { text: '基礎等級通過門檻對照值 (平均數 ± 1個標準差)：\n', options: { bold: true, fontSize: 13.5, color: '000000' } },
-      { text: `• 基礎 - 1個標準差 (寬鬆門檻)：${baseAvg - baseSd} 題\n`, options: { fontSize: 12.5, color: '333333' } },
-      { text: `• 基礎等級 (平均門檻值)：${baseAvg} 題\n`, options: { fontSize: 12.5, bold: true, color: '385723' } },
-      { text: `• 基礎 + 1個標準差 (嚴格門檻)：${baseAvg + baseSd} 題`, options: { fontSize: 12.5, color: '333333' } }
+      { text: '基礎等級通過門檻對照值 (平均數 ± 1個標準差)：\n', options: { bold: true, fontSize: 14, color: '000000' } },
+      { text: `• 基礎 - 1個標準差 (寬鬆門檻)：${baseAvg - baseSd} 題\n`, options: { fontSize: 14, color: '333333' } },
+      { text: `• 基礎等級 (平均門檻值)：${baseAvg} 題\n`, options: { fontSize: 14, bold: true, color: '385723' } },
+      { text: `• 基礎 + 1個標準差 (嚴格門檻)：${baseAvg + baseSd} 題`, options: { fontSize: 14, color: '333333' } }
     ],
-    { x: 1.2, y: 5.85, w: 10.93, h: 1.35, fontFace: fontFam }
+    { x: 2.167, y: 5.9, w: 9, h: 1.2, fontFace: fontFam }
   );
 
   // ==========================================
@@ -97,38 +99,34 @@ export async function generatePptxReport({
   // ==========================================
   const slide3 = pres.addSlide();
   slide3.addText('精熟等級門檻分析 (Cut Score)', {
-    x: 1.0, y: 0.4, w: 11.33, h: 0.6,
+    x: 2.167, y: 0.4, w: 9, h: 0.6,
     fontSize: 24, bold: true, color: '1B365D', align: 'center', fontFace: fontFam
   });
 
   if (c2) {
     slide3.addImage({
       data: c2,
-      x: 1.2, y: 1.15, w: 10.93, h: 4.55
+      x: 2.167, y: 1.3, w: 9, h: 4.5
     });
   }
 
   slide3.addText(
     [
-      { text: '精熟等級通過門檻對照值 (平均數 ± 1個標準差)：\n', options: { bold: true, fontSize: 13.5, color: '000000' } },
-      { text: `• 精熟 - 1個標準差 (寬鬆門檻)：${mastAvg - mastSd} 題\n`, options: { fontSize: 12.5, color: '333333' } },
-      { text: `• 精熟等級 (平均門檻值)：${mastAvg} 題\n`, options: { fontSize: 12.5, bold: true, color: '385723' } },
-      { text: `• 精熟 + 1個標準差 (嚴格門檻)：${mastAvg + mastSd} 題`, options: { fontSize: 12.5, color: '333333' } }
+      { text: '精熟等級通過門檻對照值 (平均數 ± 1個標準差)：\n', options: { bold: true, fontSize: 14, color: '000000' } },
+      { text: `• 精熟 - 1個標準差 (寬鬆門檻)：${mastAvg - mastSd} 題\n`, options: { fontSize: 14, color: '333333' } },
+      { text: `• 精熟等級 (平均門檻值)：${mastAvg} 題\n`, options: { fontSize: 14, bold: true, color: '385723' } },
+      { text: `• 精熟 + 1個標準差 (嚴格門檻)：${mastAvg + mastSd} 題`, options: { fontSize: 14, color: '333333' } }
     ],
-    { x: 1.2, y: 5.85, w: 10.93, h: 1.35, fontFace: fontFam }
+    { x: 2.167, y: 5.9, w: 9, h: 1.2, fontFace: fontFam }
   );
 
   // ==========================================
-  // Slide 4 ~ N: 題目變異數排序表
+  // Slide 4 ~ N: 題目標準差排序表
   // ==========================================
   const varSheet = analysis.varianceSheet;
-  // If total items <= 16, put on 1 slide.
-  // If total items > 16, comfortably paginate with max 10 items per column (max 20 items per slide).
-  // For 35 items: Slide 1 has 18 items (9 left, 9 right), Slide 2 has 17 items (9 left, 8 right).
-  // Total 10 rows per column (1 header + 9 items) = 3.8 inches tall.
-  // Leaves 2.5 inches of margin at bottom, 100% immune to cut-off.
-  const itemsPerSlide = varSheet.length <= 16 ? varSheet.length : 20;
-  const numSlides = Math.ceil(varSheet.length / itemsPerSlide) || 1;
+  // Match r-angoff: 19 item rows per column, 38 rows per slide.
+  const itemsPerSlide = VARIANCE_ITEMS_PER_SLIDE;
+  const numSlides = Math.ceil(varSheet.length / itemsPerSlide);
 
   for (let sIdx = 0; sIdx < numSlides; sIdx++) {
     const slide = pres.addSlide();
@@ -139,15 +137,6 @@ export async function generatePptxReport({
 
     const leftItems = subItems.slice(0, splitPoint);
     const rightItems = subItems.slice(splitPoint);
-
-    const slideTitle = numSlides > 1 
-      ? `題目變異數排序表 (${sIdx + 1}/${numSlides})` 
-      : '題目變異數排序表';
-
-    slide.addText(slideTitle, {
-      x: 1.0, y: 0.4, w: 11.33, h: 0.5,
-      fontSize: 24, bold: true, color: '1B365D', align: 'center', fontFace: fontFam
-    });
 
     const buildTableRows = (items) => {
       const rows = [
@@ -160,7 +149,7 @@ export async function generatePptxReport({
         ]
       ];
       items.forEach((item, rIdx) => {
-        const bg = rIdx % 2 === 1 ? 'E6E6E6' : 'FFFFFF';
+        const bg = rIdx % 2 === 0 ? 'E6E6E6' : 'FFFFFF';
         rows.push([
           { text: String(item.題號), options: { align: 'center', fill: { color: bg } } },
           { text: String(item.標準差), options: { align: 'center', fill: { color: bg } } },
@@ -172,28 +161,35 @@ export async function generatePptxReport({
       return rows;
     };
 
-    const colWidths = [1.0, 1.3, 1.0, 1.0, 1.1]; // total = 5.4 in
+    const varianceRowHeight = 0.385;
     const tableOptions = {
-      y: 1.15,
-      w: 5.4,
-      colW: colWidths,
-      fontSize: 12,
+      y: 0.18,
+      w: 4.8,
+      rowH: varianceRowHeight,
+      fontSize: 15,
       fontFace: fontFam,
-      margin: [2.5, 3, 2.5, 3],
+      margin: [2, 2, 2, 2],
+      // PptxGenJS emits a valid OOXML `anchor="ctr"` for "middle"; "mid"
+      // is serialized literally and causes PowerPoint to reject the deck.
+      valign: 'middle',
       border: { type: 'solid', pt: 0.5, color: '000000' }
     };
 
     if (leftItems.length > 0) {
       slide.addTable(buildTableRows(leftItems), {
         ...tableOptions,
-        x: 1.0
+        x: 1.867,
+        h: (leftItems.length + 1) * varianceRowHeight,
+        colW: [0.96, 1.05, 0.87, 0.96, 0.96]
       });
     }
 
     if (rightItems.length > 0) {
       slide.addTable(buildTableRows(rightItems), {
         ...tableOptions,
-        x: 6.9
+        x: 6.667,
+        h: (rightItems.length + 1) * varianceRowHeight,
+        colW: [0.89, 1.03, 0.96, 0.96, 0.96]
       });
     }
   }
@@ -204,14 +200,14 @@ export async function generatePptxReport({
   if (studentResult) {
     const slideStu = pres.addSlide();
     slideStu.addText('學生等級比例分布', {
-      x: 1.0, y: 0.4, w: 11.33, h: 0.6,
-      fontSize: 24, bold: true, color: '1B365D', align: 'center', fontFace: fontFam
+      x: 1.667, y: 0.4, w: 4.5, h: 0.6,
+      fontSize: 24, color: '000000', align: 'left', fontFace: fontFam
     });
 
     if (pie) {
       slideStu.addImage({
         data: pie,
-        x: 0.8, y: 1.2, w: 5.8, h: 5.6
+        x: 0.25, y: 1.15, w: 4.75, h: 4.75
       });
     }
 
@@ -219,28 +215,7 @@ export async function generatePptxReport({
     const masteryThreshold = Number(studentResult.thresholds.精熟);
     const nItems = analysis.nItems;
 
-    // Threshold indicator badges
-    slideStu.addShape(pres.ShapeType.rect, {
-      x: 7.0, y: 1.3, w: 2.6, h: 0.65,
-      fill: { color: 'F59E0B' },
-      line: { color: 'D97706', width: 1 }
-    });
-    slideStu.addText(`基礎門檻：${basicThreshold} 題`, {
-      x: 7.0, y: 1.3, w: 2.6, h: 0.65,
-      fontSize: 14, bold: true, color: 'FFFFFF', align: 'center', fontFace: fontFam
-    });
-
-    slideStu.addShape(pres.ShapeType.rect, {
-      x: 10.0, y: 1.3, w: 2.6, h: 0.65,
-      fill: { color: '64748B' },
-      line: { color: '475569', width: 1 }
-    });
-    slideStu.addText(`精熟門檻：${masteryThreshold} 題`, {
-      x: 10.0, y: 1.3, w: 2.6, h: 0.65,
-      fontSize: 14, bold: true, color: 'FFFFFF', align: 'center', fontFace: fontFam
-    });
-
-    // Formatted Table
+    // Keep the original five-column table, orange header and plain white body.
     const summary = studentResult.summary;
     const needsRow = summary.find(s => s.等級 === '待加強') || { 人數: 0, 百分比: 0 };
     const basicRow = summary.find(s => s.等級 === '基礎') || { 人數: 0, 百分比: 0 };
@@ -249,47 +224,81 @@ export async function generatePptxReport({
 
     const stuRows = [
       [
-        { text: '最低能力', options: { bold: true, fill: { color: 'C6EFCE' }, align: 'center' } },
-        { text: '答對題數', options: { bold: true, fill: { color: 'C6EFCE' }, align: 'center' } },
-        { text: '全體', options: { bold: true, fill: { color: 'C6EFCE' }, align: 'center' } },
-        { text: '人數', options: { bold: true, fill: { color: 'C6EFCE' }, align: 'right' } },
-        { text: '百分比', options: { bold: true, fill: { color: 'C6EFCE' }, align: 'right' } }
+        { text: '最低能力', options: { bold: true, color: 'FFFFFF', fill: { color: 'ED7D31' }, align: 'center', border: { type: 'solid', pt: 0.5, color: 'FFFFFF' } } },
+        { text: '答對題數', options: { bold: true, color: 'FFFFFF', fill: { color: 'ED7D31' }, align: 'center', border: { type: 'solid', pt: 0.5, color: 'FFFFFF' } } },
+        { text: '全體', options: { bold: true, color: 'FFFFFF', fill: { color: 'ED7D31' }, align: 'center', border: { type: 'solid', pt: 0.5, color: 'FFFFFF' } } },
+        { text: '人數', options: { bold: true, color: 'FFFFFF', fill: { color: 'ED7D31' }, align: 'center', border: { type: 'solid', pt: 0.5, color: 'FFFFFF' } } },
+        { text: '百分比', options: { bold: true, color: 'FFFFFF', fill: { color: 'ED7D31' }, align: 'center', border: { type: 'solid', pt: 0.5, color: 'FFFFFF' } } }
       ],
       [
         { text: '', options: { align: 'center' } },
-        { text: `0 - ${Math.max(0, basicThreshold - 1)}`, options: { align: 'center', bold: true } },
+        { text: `0-${Math.max(0, basicThreshold - 1)}`, options: { align: 'center' } },
         { text: '待加強', options: { align: 'center' } },
-        { text: needsRow.人數.toLocaleString(), options: { align: 'right' } },
-        { text: `${Math.round(needsRow.百分比 * 100)}%`, options: { align: 'right' } }
+        { text: String(needsRow.人數), options: { align: 'center' } },
+        { text: SAAAMath.formatPercent(needsRow.百分比, 0), options: { align: 'center' } }
       ],
       [
-        { text: '基礎', options: { align: 'center', bold: true, color: 'B45309' } },
-        { text: `${basicThreshold} - ${Math.max(basicThreshold, masteryThreshold - 1)}`, options: { align: 'center', bold: true } },
+        { text: '基礎', options: { align: 'center', color: '7030A0' } },
+        { text: `${basicThreshold}-${Math.max(basicThreshold, masteryThreshold - 1)}`, options: { align: 'center' } },
         { text: '基礎', options: { align: 'center' } },
-        { text: basicRow.人數.toLocaleString(), options: { align: 'right' } },
-        { text: `${Math.round(basicRow.百分比 * 100)}%`, options: { align: 'right' } }
+        { text: String(basicRow.人數), options: { align: 'center' } },
+        { text: SAAAMath.formatPercent(basicRow.百分比, 0), options: { align: 'center' } }
       ],
       [
-        { text: '精熟', options: { align: 'center', bold: true, color: '334155' } },
-        { text: `${masteryThreshold} - ${nItems}`, options: { align: 'center', bold: true } },
+        { text: '精熟', options: { align: 'center', color: '7030A0' } },
+        { text: `${masteryThreshold}-${nItems}`, options: { align: 'center' } },
         { text: '精熟', options: { align: 'center' } },
-        { text: mastRow.人數.toLocaleString(), options: { align: 'right' } },
-        { text: `${Math.round(mastRow.百分比 * 100)}%`, options: { align: 'right' } }
+        { text: String(mastRow.人數), options: { align: 'center' } },
+        { text: SAAAMath.formatPercent(mastRow.百分比, 0), options: { align: 'center' } }
       ],
       [
-        { text: '合計', options: { colspan: 3, bold: true, align: 'center', fill: { color: 'F1F5F9' } } },
-        { text: totalCount.toLocaleString(), options: { bold: true, align: 'right', fill: { color: 'F1F5F9' } } },
-        { text: '100%', options: { bold: true, align: 'right', fill: { color: 'F1F5F9' } } }
+        { text: '', options: { align: 'center' } },
+        { text: '', options: { align: 'center' } },
+        { text: '合計', options: { align: 'center', bold: true } },
+        { text: String(totalCount), options: { align: 'center', bold: true } },
+        { text: '100%', options: { align: 'center', bold: true } }
       ]
     ];
 
+    const studentRowHeights = [0.622, 0.766, 0.722, 0.722, 0.722];
     slideStu.addTable(stuRows, {
-      x: 7.0, y: 2.3, w: 5.6,
-      colW: [1.1, 1.4, 1.1, 1.0, 1.0],
-      fontSize: 12,
+      x: 5.217, y: 1.644, w: 7.437,
+      h: studentRowHeights.reduce((total, rowHeight) => total + rowHeight, 0),
+      colW: [1.4874, 1.4874, 1.4874, 1.4874, 1.4874],
+      rowH: studentRowHeights,
+      fontSize: 18,
       fontFace: fontFam,
-      margin: [3, 4, 3, 4],
-      border: { type: 'solid', pt: 0.5, color: '000000' }
+      margin: [2, 3, 2, 3],
+      valign: 'middle',
+      border: { type: 'solid', pt: 0.5, color: 'ED7D31' }
+    });
+    slideStu.addShape(pres.ShapeType.rect, {
+      x: 5.217, y: 1.644, w: 7.437,
+      h: studentRowHeights.reduce((total, rowHeight) => total + rowHeight, 0),
+      fill: { color: 'FFFFFF', transparency: 100 },
+      line: { color: 'C65911', width: 1 }
+    });
+
+    // The original deck marks both cut scores with outlined number boxes in
+    // the first column, aligned beside the two threshold categories.
+    const addThresholdMarker = (value, y) => {
+      slideStu.addShape(pres.ShapeType.rect, {
+        x: 6.296, y, w: 0.634, h: 0.505,
+        fill: { color: 'FFFFFF' },
+        line: { color: '000000', width: 1 }
+      });
+      slideStu.addText(String(value), {
+        x: 6.296, y, w: 0.634, h: 0.505,
+        margin: 0, fontSize: 24, bold: true, color: '000000',
+        align: 'center', valign: 'mid', fontFace: fontFam
+      });
+    };
+    addThresholdMarker(basicThreshold, 2.817);
+    addThresholdMarker(masteryThreshold, 3.522);
+
+    slideStu.addText(String(4 + numSlides), {
+      x: 9.417, y: 6.95, w: 3, h: 0.4,
+      fontSize: 14, color: 'A6A6A6', align: 'right', fontFace: fontFam
     });
   }
 
